@@ -14,6 +14,7 @@ def main():
         command = commandParsed[0]
 
         # Process command parameters
+        isCommandInvalid = False
         match command:
             case "exit":
                 param = int(commandParsed[1])
