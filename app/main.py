@@ -44,7 +44,7 @@ def main():
                 for directory in sys.path:
                     candidatePath = os.path.join(directory, param)
                     candidateFile = candidatePath + ".sh"
-                    if sys.isfile(candidateFile) and os.access(candidateFile, os.X_OK):
+                    if os.path.isfile(candidateFile) and os.access(candidateFile, os.X_OK):
                         sys.stdout.write(f"{param} is {candidatePath}\n")
                         isFileFound = True
                         break
