@@ -3,23 +3,24 @@ import sys
 
 def main():
     exit = False
+    isCommandInvalid = False
     while not exit:
         # Print a prompt
         sys.stdout.write("$ ")
 
         # Parse command
         command = input()
-        command_parsed = command.split(" ")
-        command = command_parsed[0]
+        commandParsed = command.split(" ")
+        command = commandParsed[0]
 
         # Process command parameters
         match command:
             case "exit":
-                param = int(command_parsed[1])
+                param = int(commandParsed[1])
             case "echo":
-                param = command_parsed[1:]
+                param = commandParsed[1:]
             case _:
-                command = "invalid"
+                isCommandInvalid = True
 
         # Exit
         if command == "exit" and param == 0:
@@ -30,7 +31,7 @@ def main():
             sys.stdout.write(f"{' '.join(param)}\n")
 
         # Invalid
-        if command == "invalid":
+        if isCommandInvalid:
             sys.stdout.write(f"{command}: command not found\n")
 
 
