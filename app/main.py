@@ -11,16 +11,26 @@ def main():
         command = input()
         command_parsed = command.split(" ")
         command = command_parsed[0]
-        match len(command_parsed):
-            case 1:
-                param = None
-            case 2:
-                param = int(command_parsed[1])
 
-        # Exit or invalid
+        # Process command parameters
+        match command:
+            case "exit":
+                param = int(command_parsed[1])
+            case "echo":
+                param = command_parsed[1:]
+            case _:
+                command = "invalid"
+
+        # Exit
         if command == "exit" and param == 0:
             exit = True
-        else:
+
+        # Echo
+        if command == "echo":
+            sys.stdout.write(f"{' '.join(param)}\n")
+
+        # Invalid
+        if command == "invalid":
             sys.stdout.write(f"{command}: command not found\n")
 
 
