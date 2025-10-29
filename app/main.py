@@ -1,5 +1,6 @@
 import sys
 import os
+import shutil
 
 
 def main():
@@ -13,6 +14,8 @@ def main():
         command = input()
         commandParsed = command.split(" ")
         command = commandParsed[0]
+
+        print(os.environ["PATH"])
 
         # Process command parameters
         isCommandInvalid = False
@@ -40,16 +43,10 @@ def main():
                 sys.stdout.write(f"{param} is a shell builtin\n")
             else:
                 # Search for command in PATH
-                isFileFound = False
-                for directory in sys.path:
-                    print(directory)
-                    candidatePath = os.path.join(directory, param)
-                    candidateFile = candidatePath + ".sh"
-                    if os.path.isfile(candidateFile) and os.access(candidateFile, os.X_OK):
-                        sys.stdout.write(f"{param} is {candidatePath}\n")
-                        isFileFound = True
-                        break
-                if not isFileFound:
+                executablePath = shutil.which(param, mode=os.X_OK)
+                if executablePath:
+                    sys.stdout.write(f"{param} is {executablePath}\n")
+                else:
                     sys.stdout.write(f"{param}: not found\n")
 
         # Invalid
