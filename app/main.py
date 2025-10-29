@@ -69,7 +69,6 @@ def main():
 
         # Executable file
         subprocess.run(commandParsed)
-        sys.stdout.write("\n")
 
 
 if __name__ == "__main__":
