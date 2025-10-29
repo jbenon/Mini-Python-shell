@@ -36,12 +36,7 @@ def main():
                     isCommandInvalid = True
             case _:
                 executablePath = shutil.which(command, mode=os.X_OK)
-                if executablePath:
-                    if len(commandParsed) > 1:
-                        param = commandParsed[1:]
-                    else:
-                        param = None
-                else:
+                if not executablePath:
                     isCommandInvalid = True
 
         # Invalid
@@ -73,7 +68,7 @@ def main():
             continue
 
         # Executable file
-        subprocess.run([executablePath] + param)
+        subprocess.run(commandParsed)
         sys.stdout.write("\n")
 
 
