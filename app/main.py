@@ -42,6 +42,7 @@ def main():
                 # Search for command in PATH
                 isFileFound = False
                 for directory in sys.path:
+                    print(directory)
                     candidatePath = os.path.join(directory, param)
                     candidateFile = candidatePath + ".sh"
                     if os.path.isfile(candidateFile) and os.access(candidateFile, os.X_OK):
