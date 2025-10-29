@@ -15,8 +15,6 @@ def main():
         commandParsed = command.split(" ")
         command = commandParsed[0]
 
-        print(os.environ["PATH"])
-
         # Process command parameters
         isCommandInvalid = False
         match command:
