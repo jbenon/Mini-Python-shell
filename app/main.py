@@ -20,6 +20,8 @@ def main():
                 param = int(commandParsed[1])
             case "echo":
                 param = commandParsed[1:]
+            case "type":
+                param = commandParsed[1]
             case _:
                 isCommandInvalid = True
 
@@ -30,6 +32,13 @@ def main():
         # Echo
         if command == "echo":
             sys.stdout.write(f"{' '.join(param)}\n")
+
+        # Type
+        if command == "type":
+            if param in ["exit", "echo", "type"]:
+                sys.stdout.write(f"{param} is a shell builtin\n")
+            else:
+                sys.stdout.write(f"{param}: not found\n")
 
         # Invalid
         if isCommandInvalid:
