@@ -1,4 +1,5 @@
 import sys
+import os
 
 
 def main():
@@ -38,7 +39,18 @@ def main():
             if param in ["exit", "echo", "type"]:
                 sys.stdout.write(f"{param} is a shell builtin\n")
             else:
-                sys.stdout.write(f"{param}: not found\n")
+                # Search for command in PATH
+                allDirInPath = sys.path.split(os.path.sep)
+                isFileFound = False
+                for directory in allDirInPath:
+                    candidatePath = os.path.join(directory, param + ".sh")
+                    candidateFile = candidatePath + ".sh"
+                    if sys.isfile(candidateFile) and os.access(candidateFile, os.X_OK):
+                        sys.stdout.write(f"{param} is {candidatePath}\n")
+                        isFileFound = True
+                        break
+                if not isFileFound:
+                    sys.stdout.write(f"{param}: not found\n")
 
         # Invalid
         if isCommandInvalid:
