@@ -40,10 +40,9 @@ def main():
                 sys.stdout.write(f"{param} is a shell builtin\n")
             else:
                 # Search for command in PATH
-                allDirInPath = sys.path.split(os.path.sep)
                 isFileFound = False
-                for directory in allDirInPath:
-                    candidatePath = os.path.join(directory, param + ".sh")
+                for directory in sys.path:
+                    candidatePath = os.path.join(directory, param)
                     candidateFile = candidatePath + ".sh"
                     if sys.isfile(candidateFile) and os.access(candidateFile, os.X_OK):
                         sys.stdout.write(f"{param} is {candidatePath}\n")
