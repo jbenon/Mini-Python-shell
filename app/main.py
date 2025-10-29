@@ -35,7 +35,7 @@ def main():
                 else:
                     isCommandInvalid = True
             case _:
-                executablePath = shutil.which(param, mode=os.X_OK)
+                executablePath = shutil.which(command, mode=os.X_OK)
                 if executablePath:
                     if len(commandParsed) > 1:
                         param = commandParsed[1:]
