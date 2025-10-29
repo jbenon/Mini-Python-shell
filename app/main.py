@@ -1,6 +1,7 @@
 import sys
 import os
 import shutil
+import subprocess
 
 
 def main():
@@ -19,21 +20,44 @@ def main():
         isCommandInvalid = False
         match command:
             case "exit":
-                param = int(commandParsed[1])
+                if len(commandParsed) > 1:
+                    param = int(commandParsed[1])
+                else:
+                    isCommandInvalid = True
             case "echo":
-                param = commandParsed[1:]
+                if len(commandParsed) > 1:
+                    param = commandParsed[1:]
+                else:
+                    isCommandInvalid = True
             case "type":
-                param = commandParsed[1]
+                if len(commandParsed) > 1:
+                    param = commandParsed[1]
+                else:
+                    isCommandInvalid = True
             case _:
-                isCommandInvalid = True
+                executablePath = shutil.which(param, mode=os.X_OK)
+                if executablePath:
+                    if len(commandParsed) > 1:
+                        param = commandParsed[1:]
+                    else:
+                        param = None
+                else:
+                    isCommandInvalid = True
+
+        # Invalid
+        if isCommandInvalid:
+            sys.stdout.write(f"{command}: command not found\n")
+            continue
 
         # Exit
         if command == "exit" and param == 0:
             exit = True
+            continue
 
         # Echo
         if command == "echo":
             sys.stdout.write(f"{' '.join(param)}\n")
+            continue
 
         # Type
         if command == "type":
@@ -46,10 +70,11 @@ def main():
                     sys.stdout.write(f"{param} is {executablePath}\n")
                 else:
                     sys.stdout.write(f"{param}: not found\n")
+            continue
 
-        # Invalid
-        if isCommandInvalid:
-            sys.stdout.write(f"{command}: command not found\n")
+        # Executable file
+        subprocess.run([executablePath] + param)
+        sys.stdout.write("\n")
 
 
 if __name__ == "__main__":
