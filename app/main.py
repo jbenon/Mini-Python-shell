@@ -52,7 +52,6 @@ class Command:
                 subprocess.run([self.command] + self.params)
             except Exception as e:
                 sys.stdout.write(f"{e}\n")
-            sys.stdout.write("\n")
         else:
             sys.stdout.write(f"{self.command}: command not found\n")
 
