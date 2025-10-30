@@ -23,35 +23,34 @@ class Command:
 
     def __init__(self, inputList: list[str]):
         self.command = inputList[0]
-        # Clean parameters to account for single quotes
+        # Clean parameters to account for single and double quotes
         if len(inputList) > 1:
             inputParamsString = " ".join(inputList[1:])
             self.params = []
-            isBetweenQuotes = False
+            isBetweenSingleQuotes = False
+            isBetweenDoubleQuotes = False
             currentParam = ""
             for iChar, char in enumerate(inputParamsString):
                 if char == "'":
-                    ignoreQuote = False
-                    # Ignore if this is a pair of empty quotes
-                    if iChar < (len(inputParamsString) - 1) and inputParamsString[iChar + 1] == "'":
-                        ignoreQuote = True
-                    elif iChar > 0 and inputParamsString[iChar - 1] == "'":
-                        ignoreQuote = True
-                    # Change character storage settings
-                    else:
-                        isBetweenQuotes = not isBetweenQuotes
-                    # Store quote literally if this is not a pair of quotes
-                    if isBetweenQuotes and (
-                        iChar == len(inputParamsString) - 1 or "'" not in inputParamsString[iChar + 1 :]
-                    ):
-                        isBetweenQuotes = False
-                        currentParam = currentParam + char
-                    # Start a block between quotes
-                    if isBetweenQuotes and len(currentParam) > 0 and not ignoreQuote:
-                        self.params.append(currentParam)
-                        currentParam = ""
+                    currentParam, isBetweenSingleQuotes = self.updateParamQuote(
+                        char,
+                        isBetweenSingleQuotes,
+                        isBetweenDoubleQuotes,
+                        currentParam,
+                        iChar,
+                        inputParamsString,
+                    )
+                elif char == '"':
+                    currentParam, isBetweenDoubleQuotes = self.updateParamQuote(
+                        char,
+                        isBetweenDoubleQuotes,
+                        isBetweenSingleQuotes,
+                        currentParam,
+                        iChar,
+                        inputParamsString,
+                    )
                 elif char == " ":
-                    if isBetweenQuotes:
+                    if isBetweenSingleQuotes or isBetweenDoubleQuotes:
                         currentParam = currentParam + char
                     else:
                         # Start new block delimited by a space
@@ -64,6 +63,41 @@ class Command:
                 self.params.append(currentParam)
         else:
             self.params = None
+
+    def updateParamQuote(
+        self,
+        quoteType: str,
+        isBetweenTargetQuoteType: bool,
+        isBetweenOtherQuoteType: bool,
+        currentParam: str,
+        iChar: int,
+        inputParamsString: str,
+    ) -> tuple[str, bool]:
+        """Util function called when a quote character is encountered when cleaning parameters during initialisation."""
+        # Treats the quote as any other character if we're already in a quote block
+        if isBetweenOtherQuoteType:
+            currentParam = currentParam + quoteType
+        else:
+            ignoreQuote = False
+            # Ignore if this is a pair of empty quotes
+            if iChar < (len(inputParamsString) - 1) and inputParamsString[iChar + 1] == quoteType:
+                ignoreQuote = True
+            elif iChar > 0 and inputParamsString[iChar - 1] == quoteType:
+                ignoreQuote = True
+            # Change character storage settings
+            else:
+                isBetweenTargetQuoteType = not isBetweenTargetQuoteType
+            # Store quote literally if this is not a pair of quotes
+            if isBetweenTargetQuoteType and (
+                iChar == len(inputParamsString) - 1 or quoteType not in inputParamsString[iChar + 1 :]
+            ):
+                isBetweenTargetQuoteType = False
+                currentParam = currentParam + quoteType
+            # Start a block between quotes
+            if len(currentParam) > 0 and not ignoreQuote:
+                self.params.append(currentParam)
+                currentParam = ""
+        return currentParam, isBetweenTargetQuoteType
 
     def isValidBuiltin(self, target: str = "") -> bool:
         """Checks whether a command is builtin."""
