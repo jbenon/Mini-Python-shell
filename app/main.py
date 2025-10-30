@@ -65,7 +65,30 @@ class Command:
 
     def echo(self):
         """Displays the parameters in the shell."""
-        sys.stdout.write(f"{' '.join(self.params).replace("'", '').replace("''", '')}\n")
+        inputString = " ".join(self.params)
+        # Builds the string to actually display
+        displayString = ""
+        displayLiteral = False
+        for iChar, char in enumerate(inputString):
+            if char == "'":
+                # Change display mode
+                displayLiteral = not displayLiteral
+                # Display if this is not a pair of single quotes
+                if displayLiteral:
+                    if iChar == len(inputString) - 1:
+                        displayString = displayString + char
+                    elif "'" not in inputString[iChar + 1 :]:
+                        displayString = displayString + char
+            elif char == " ":
+                if displayLiteral:
+                    displayString = displayString + char
+                else:
+                    if len(displayString) == 0 or displayString[-1] != " ":
+                        displayString = displayString + char
+            else:
+                displayString = displayString + char
+        # Actually displays
+        sys.stdout.write(f"{displayString}\n")
 
     def type(self):
         """Displays the type of the parameter command."""
