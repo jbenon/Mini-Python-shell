@@ -87,6 +87,13 @@ class Command:
             else:
                 sys.stdout.write(f"{self.params}: not found\n")
 
+    def pwd(self):
+        """Displays the current working directory."""
+        if self.params is not None:
+            "No parameter should be provided."
+            return
+        sys.stdout.write(f"{os.getcwd()}\n")
+
 
 if __name__ == "__main__":
     main()
