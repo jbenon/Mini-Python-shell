@@ -23,8 +23,37 @@ class Command:
 
     def __init__(self, inputList: list[str]):
         self.command = inputList[0]
+        # Clean parameters to account for single quotes
         if len(inputList) > 1:
-            self.params = inputList[1:]
+            inputParamsString = " ".join(inputList[1:])
+            self.params = []
+            isBetweenQuotes = False
+            currentParam = ""
+            for iChar, char in enumerate(inputParamsString):
+                if char == "'":
+                    isBetweenQuotes = not isBetweenQuotes
+                    # If this is not a pair of quotes
+                    if isBetweenQuotes and (
+                        iChar == len(inputParamsString) - 1 or "'" not in inputParamsString[iChar + 1 :]
+                    ):
+                        isBetweenQuotes = False
+                        currentParam = currentParam + char
+                    # Start a block between quotes
+                    if isBetweenQuotes and len(currentParam) > 0:
+                        self.params.append(currentParam)
+                        currentParam = ""
+                elif char == " ":
+                    if isBetweenQuotes:
+                        currentParam = currentParam + char
+                    else:
+                        # Start new block delimited by a space
+                        if len(currentParam) > 0:
+                            self.params.append(currentParam)
+                            currentParam = ""
+                else:
+                    currentParam = currentParam + char
+            if len(currentParam) > 0:
+                self.params.append(currentParam)
         else:
             self.params = None
 
@@ -65,30 +94,7 @@ class Command:
 
     def echo(self):
         """Displays the parameters in the shell."""
-        inputString = " ".join(self.params)
-        # Builds the string to actually display
-        displayString = ""
-        displayLiteral = False
-        for iChar, char in enumerate(inputString):
-            if char == "'":
-                # Change display mode
-                displayLiteral = not displayLiteral
-                # Display if this is not a pair of single quotes
-                if displayLiteral:
-                    if iChar == len(inputString) - 1:
-                        displayString = displayString + char
-                    elif "'" not in inputString[iChar + 1 :]:
-                        displayString = displayString + char
-            elif char == " ":
-                if displayLiteral:
-                    displayString = displayString + char
-                else:
-                    if len(displayString) == 0 or displayString[-1] != " ":
-                        displayString = displayString + char
-            else:
-                displayString = displayString + char
-        # Actually displays
-        sys.stdout.write(f"{displayString}\n")
+        sys.stdout.write(f"{' '.join(self.params)}\n")
 
     def type(self):
         """Displays the type of the parameter command."""
@@ -123,25 +129,6 @@ class Command:
             os.chdir(self.params[0])
         else:
             sys.stdout.write(f"cd: {self.params[0]}: No such file or directory\n")
-
-    # def cat(self):
-    #     """Displays the content of the file given in parameter."""
-    #     # Clean the list of parameters to extract paths enclosed by single quotes
-    #     inputPaths = " ".join(self.params)
-    #     inputPaths = inputPaths.split("'")
-    #     cleanPaths = []
-    #     for path in inputPaths:
-    #         if len(path) == 0 or path == len(path) * path[0]:
-    #             pass
-    #         else:
-    #             cleanPaths.append(path)
-    #     # Display file content
-    #     for path in cleanPaths:
-    #         try:
-    #             with open(path, "r") as file:
-    #                 sys.stdout.write(file.read())
-    #         except Exception as e:
-    #             sys.stdout.write(f"{e}\n")
 
 
 if __name__ == "__main__":
