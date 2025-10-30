@@ -49,7 +49,7 @@ class Command:
             exec(stringMethod)
         elif self.isValidExecutable():
             try:
-                subprocess.run(self.command + self.params)
+                subprocess.run([self.command] + self.params)
             except Exception as e:
                 sys.stdout.write(f"{e}\n")
             sys.stdout.write("\n")
