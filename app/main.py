@@ -140,11 +140,8 @@ class Command:
             try:
                 with open(path, "r") as file:
                     sys.stdout.write(file.read())
-                # Print separation or line break
                 if iPath == len(cleanPaths) - 1:
                     sys.stdout.write("\n")
-                else:
-                    sys.stdout.write(" ")
             except Exception as e:
                 sys.stdout.write(f"{e}\n")
 
