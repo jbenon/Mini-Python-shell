@@ -31,11 +31,12 @@ class Command:
             currentParam = ""
             for iChar, char in enumerate(inputParamsString):
                 if char == "'":
+                    ignoreQuote = False
                     # Ignore if this is a pair of empty quotes
                     if iChar < (len(inputParamsString) - 1) and inputParamsString[iChar + 1] == "'":
-                        pass
+                        ignoreQuote = True
                     elif iChar > 0 and inputParamsString[iChar - 1] == "'":
-                        pass
+                        ignoreQuote = True
                     # Change character storage settings
                     else:
                         isBetweenQuotes = not isBetweenQuotes
@@ -46,7 +47,7 @@ class Command:
                         isBetweenQuotes = False
                         currentParam = currentParam + char
                     # Start a block between quotes
-                    if isBetweenQuotes and len(currentParam) > 0:
+                    if isBetweenQuotes and len(currentParam) > 0 and not ignoreQuote:
                         self.params.append(currentParam)
                         currentParam = ""
                 elif char == " ":
