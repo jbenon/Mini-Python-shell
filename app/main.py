@@ -23,9 +23,7 @@ class Command:
 
     def __init__(self, inputList: list[str]):
         self.command = inputList[0]
-        if len(inputList) == 2:
-            self.params = inputList[1]
-        elif len(inputList) > 2:
+        if len(inputList) > 1:
             self.params = inputList[1:]
         else:
             self.params = None
@@ -54,43 +52,41 @@ class Command:
                 subprocess.run(self.command + self.params)
             except Exception as e:
                 sys.stdout.write(f"{e}\n")
+            sys.stdout.write("\n")
         else:
             sys.stdout.write(f"{self.command}: command not found\n")
 
     def exit(self):
         """Exits the terminal."""
-        if type(self.params) is list or self.params not in ["0", "1"]:
-            sys.stdout.write("The expected parameter is '0' or '1'.\n")
+        if len(self.params) > 1 or self.params[0] not in ["0", "1"]:
+            sys.stdout.write("exit: expects only 0 or 1\n")
             return
-        if self.params == "0":
+        if self.params[0] == "0":
             Command.getCommandInput = False
 
     def echo(self):
         """Displays the parameters in the shell."""
-        if type(self.params) is list:
-            sys.stdout.write(f"{' '.join(self.params)}\n")
-        else:
-            sys.stdout.write(f"{self.params}\n")
+        sys.stdout.write(f"{' '.join(self.params)}\n")
 
     def type(self):
         """Displays the type of the parameter command."""
-        if type(self.params) is list:
-            sys.stdout.write("There should be only one parameter.\n")
+        if len(self.params) > 1:
+            sys.stdout.write("type: expects only one parameter\n")
             return
-        if self.isValidBuiltin(self.params):
-            sys.stdout.write(f"{self.params} is a shell builtin\n")
+        if self.isValidBuiltin(self.params[0]):
+            sys.stdout.write(f"{self.params[0]} is a shell builtin\n")
         else:
             # Search for command in PATH
-            executablePath = shutil.which(self.params, mode=os.X_OK)
+            executablePath = shutil.which(self.params[0], mode=os.X_OK)
             if executablePath:
-                sys.stdout.write(f"{self.params} is {executablePath}\n")
+                sys.stdout.write(f"{self.params[0]} is {executablePath}\n")
             else:
-                sys.stdout.write(f"{self.params}: not found\n")
+                sys.stdout.write(f"{self.params[0]}: not found\n")
 
     def pwd(self):
         """Displays the current working directory."""
         if self.params is not None:
-            "No parameter should be provided."
+            "pwd: expects no parameter"
             return
         sys.stdout.write(f"{os.getcwd()}\n")
 
