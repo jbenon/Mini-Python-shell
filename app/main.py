@@ -36,7 +36,7 @@ class Command:
                     currentParam = currentParam + char
                     escapeNextChar = False
                 else:
-                    if char == "\\":
+                    if char == "\\" and not isBetweenDoubleQuotes and not isBetweenSingleQuotes:
                         escapeNextChar = True
                     elif char == "'":
                         currentParam, isBetweenSingleQuotes = self.updateParamQuote(
