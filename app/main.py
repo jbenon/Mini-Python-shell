@@ -90,11 +90,13 @@ class Command:
         sys.stdout.write(f"{os.getcwd()}\n")
 
     def cd(self):
-        """Changes working directory to a target absolute path."""
+        """Changes working directory to a target path (absolute, relative, or HOME)."""
         if len(self.params) > 1:
             sys.stdout.write("cd: expects only one parameter\n")
             return
-        if os.path.isdir(self.params[0]):
+        if self.params[0] == "~":
+            os.chdir(os.environ["HOME"])
+        elif os.path.isdir(self.params[0]):
             os.chdir(self.params[0])
         else:
             sys.stdout.write(f"cd: {self.params[0]}: No such file or directory\n")
