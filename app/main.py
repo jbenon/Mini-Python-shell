@@ -18,7 +18,7 @@ def main():
 
 
 class Command:
-    builtinCommands = ["exit", "echo", "type", "pwd"]
+    builtinCommands = ["exit", "echo", "type", "pwd", "cd"]
     getCommandInput = True
 
     def __init__(self, inputList: list[str]):
