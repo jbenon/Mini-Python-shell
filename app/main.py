@@ -31,8 +31,15 @@ class Command:
             currentParam = ""
             for iChar, char in enumerate(inputParamsString):
                 if char == "'":
-                    isBetweenQuotes = not isBetweenQuotes
-                    # If this is not a pair of quotes
+                    # Ignore if this is a pair of empty quotes
+                    if iChar < (len(inputParamsString) - 1) and inputParamsString[iChar + 1] == "'":
+                        pass
+                    elif iChar > 0 and inputParamsString[iChar - 1] == "'":
+                        pass
+                    # Change character storage settings
+                    else:
+                        isBetweenQuotes = not isBetweenQuotes
+                    # Store quote literally if this is not a pair of quotes
                     if isBetweenQuotes and (
                         iChar == len(inputParamsString) - 1 or "'" not in inputParamsString[iChar + 1 :]
                     ):
