@@ -18,7 +18,7 @@ def main():
 
 
 class Command:
-    builtinCommands = ["exit", "echo", "type", "pwd", "cd", "cat"]
+    builtinCommands = ["exit", "echo", "type", "pwd", "cd"]
     getCommandInput = True
 
     def __init__(self, inputList: list[str]):
@@ -124,24 +124,24 @@ class Command:
         else:
             sys.stdout.write(f"cd: {self.params[0]}: No such file or directory\n")
 
-    def cat(self):
-        """Displays the content of the file given in parameter."""
-        # Clean the list of parameters to extract paths enclosed by single quotes
-        inputPaths = " ".join(self.params)
-        inputPaths = inputPaths.split("'")
-        cleanPaths = []
-        for path in inputPaths:
-            if len(path) == 0 or path == len(path) * path[0]:
-                pass
-            else:
-                cleanPaths.append(path)
-        # Display file content
-        for path in cleanPaths:
-            try:
-                with open(path, "r") as file:
-                    sys.stdout.write(file.read())
-            except Exception as e:
-                sys.stdout.write(f"{e}\n")
+    # def cat(self):
+    #     """Displays the content of the file given in parameter."""
+    #     # Clean the list of parameters to extract paths enclosed by single quotes
+    #     inputPaths = " ".join(self.params)
+    #     inputPaths = inputPaths.split("'")
+    #     cleanPaths = []
+    #     for path in inputPaths:
+    #         if len(path) == 0 or path == len(path) * path[0]:
+    #             pass
+    #         else:
+    #             cleanPaths.append(path)
+    #     # Display file content
+    #     for path in cleanPaths:
+    #         try:
+    #             with open(path, "r") as file:
+    #                 sys.stdout.write(file.read())
+    #         except Exception as e:
+    #             sys.stdout.write(f"{e}\n")
 
 
 if __name__ == "__main__":
