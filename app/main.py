@@ -65,7 +65,7 @@ class Command:
 
     def echo(self):
         """Displays the parameters in the shell."""
-        sys.stdout.write(f"{' '.join(self.params)}\n")
+        sys.stdout.write(f"{' '.join(self.params).replace("'", '').replace("''", '')}\n")
 
     def type(self):
         """Displays the type of the parameter command."""
