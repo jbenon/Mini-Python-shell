@@ -89,5 +89,4 @@ class Command:
 
 
 if __name__ == "__main__":
-    print("Welcome to my Python shell :)")
     main()
