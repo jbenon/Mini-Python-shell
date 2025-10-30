@@ -136,12 +136,10 @@ class Command:
             else:
                 cleanPaths.append(path)
         # Display file content
-        for iPath, path in enumerate(cleanPaths):
+        for path in cleanPaths:
             try:
                 with open(path, "r") as file:
                     sys.stdout.write(file.read())
-                if iPath == len(cleanPaths) - 1:
-                    sys.stdout.write("\n")
             except Exception as e:
                 sys.stdout.write(f"{e}\n")
 
