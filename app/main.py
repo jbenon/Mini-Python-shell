@@ -1,4 +1,5 @@
 import sys
+import os
 
 try:
     # When run as a package
@@ -44,18 +45,20 @@ def main():
             else:
                 outputCommand = resultCommand
                 errorCommand = None
-            if outputCommand is not None:
-                if command.fileOutput == "":
-                    sys.stdout.write(outputCommand)
-                else:
-                    with open(command.fileOutput, "w") as file:
-                        file.write(outputCommand)
-            if errorCommand is not None:
-                if command.fileError == "":
-                    sys.stdout.write(errorCommand)
-                else:
-                    with open(command.fileError, "w") as file:
-                        file.write(errorCommand)
+            writeCommandResult(outputCommand, command.fileOutput)
+            writeCommandResult(errorCommand, command.fileError)
+
+
+def writeCommandResult(result: str, file: str) -> None:
+    """Writes the result (either output or error) of a command to a target file, or to the shell."""
+    if result is not None:
+        if file == "":
+            sys.stdout.write(result)
+        else:
+            directory = os.path.dirname(file)
+            if len(directory) == 0 or os.path.isdir(directory):  # check the directory exists
+                with open(file, "w") as file:
+                    file.write(result)
 
 
 if __name__ == "__main__":
