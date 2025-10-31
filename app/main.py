@@ -22,10 +22,9 @@ class Command:
     getCommandInput = True
 
     def __init__(self, inputList: list[str]):
-        self.command = inputList[0]
-        # Clean parameters to account for single and double quotes
+        # Clean all parameters to account for single and double quotes
         if len(inputList) > 1:
-            inputParamsString = " ".join(inputList[1:])
+            inputParamsString = " ".join(inputList)
             self.params = []
             isBetweenSingleQuotes = False
             isBetweenDoubleQuotes = False
@@ -82,6 +81,12 @@ class Command:
                             currentParam = currentParam + char
             if len(currentParam) > 0:
                 self.params.append(currentParam)
+        else:
+            self.params = None
+        # Separate the command and arguments
+        self.command = self.params[0]
+        if len(self.params) > 1:
+            self.params = self.params[1:]
         else:
             self.params = None
 
