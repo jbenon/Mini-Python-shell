@@ -39,10 +39,11 @@ def main():
         # Execute then display the output and eventual error
         else:
             resultCommand = command.execute()
-            if resultCommand is tuple:
+            if isinstance(resultCommand, tuple):
                 outputCommand, errorCommand = resultCommand
             else:
                 outputCommand = resultCommand
+                errorCommand = None
             if outputCommand is not None:
                 if command.fileOutput == "":
                     sys.stdout.write(outputCommand)
