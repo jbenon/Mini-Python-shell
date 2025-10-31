@@ -2,7 +2,6 @@ import sys
 import os
 
 import readline
-import shutil
 
 try:
     # When run as a package
