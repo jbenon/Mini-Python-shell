@@ -75,17 +75,17 @@ class Command:
                         else:
                             # Start new block delimited by a space
                             if len(currentArg) > 0:
-                                self.params.append(currentArg)
+                                listArgs.append(currentArg)
                                 currentArg = ""
                     case _:
                         currentArg = currentArg + char
         if len(currentArg) > 0:
-            self.params.append(currentArg)
+            listArgs.append(currentArg)
         # Separate the command and arguments
-        if len(self.params) > 0:
-            self.command = self.params[0]
-        if len(self.params) > 1:
-            self.params = self.params[1:]
+        if len(listArgs) > 0:
+            self.command = listArgs[0]
+        if len(listArgs) > 1:
+            self.params = listArgs[1:]
         else:
             self.params = None
 
