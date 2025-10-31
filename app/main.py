@@ -31,14 +31,13 @@ def main():
         # Execute
         if command.isValid():
             commandOutput = command.execute()
-
-        # Display or write
-        if commandOutput is not None:
-            if command.fileOutput == "":
-                sys.stdout.write(commandOutput)
-            else:
-                with open(command.fileOutput, "w") as file:
-                    file.write(commandOutput)
+            # Display or write
+            if commandOutput is not None:
+                if command.fileOutput == "":
+                    sys.stdout.write(commandOutput)
+                else:
+                    with open(command.fileOutput, "w") as file:
+                        file.write(commandOutput)
 
 
 if __name__ == "__main__":
