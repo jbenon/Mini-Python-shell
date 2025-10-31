@@ -9,8 +9,8 @@ class Command:
         # By default, keep looking for other commands
         self.parseNextCommand = True
 
+        # Parse the command and its arguments
         listArgs = self.parseInputIntoCommand(inputString)
-        # Separate the command and arguments
         if len(listArgs) > 0:
             self.command = listArgs[0]
         else:
@@ -22,10 +22,17 @@ class Command:
 
         # Redirect command outputs
         self.fileOutput = ""
+        self.fileError = ""
         for iArg in range(len(self.args) - 1):
-            if self.args[iArg] == ">" or self.args[iArg] == "1>":
+            if self.args[iArg] == ">" or self.args[iArg] == "1>":  # stdout
                 self.fileOutput = self.args[iArg + 1]
-                self.args = self.args[:iArg]
+                self.args.pop(iArg)
+                self.args.pop(iArg)
+        for iArg in range(len(self.args) - 1):
+            if self.args[iArg] == "2>":  # stderr
+                self.fileError = self.args[iArg + 1]
+                self.args.pop(iArg)
+                self.args.pop(iArg)
 
     def parseInputIntoCommand(self, inputString: str = "") -> list[str]:
         """Parses the input string to extract the command and its arguments.
@@ -114,9 +121,9 @@ class Command:
         isBetweenTargetQuoteType = not isBetweenTargetQuoteType
         return currentParam, isBetweenTargetQuoteType
 
-    def isValid(self) -> bool:
+    def isValid(self) -> None:
         """By default, all commands are valid."""
-        return True
+        return
 
     @classmethod
     def getBuiltinCommandNames(cls) -> list[str]:
@@ -132,27 +139,22 @@ class Command:
 
 
 class CustomCommand(Command):
-    def isValid(self) -> bool:
+    def isValid(self) -> str | None:
         """Checks that the custom command exists and can be executed."""
         if not shutil.which(self.command, mode=os.X_OK):
-            sys.stdout.write(f"{self.command}: command not found\n")
-            return False
-        else:
-            return True
+            return f"{self.command}: command not found\n"
 
     def execute(self):
         """Runs the custom command."""
-        return subprocess.run([self.command] + self.args, stdout=subprocess.PIPE, text=True).stdout
+        output = subprocess.run([self.command] + self.args, capture_output=True, text=True)
+        return output.stdout, output.stderr
 
 
 class ExitCommand(Command):
-    def isValid(self) -> bool:
-        """Checks arguments of the command."""
+    def isValid(self) -> str | None:
+        """Check thet only one argument, equal to 0 or 1, is provided."""
         if len(self.args) > 1 or self.args[0] not in ["0", "1"]:
-            sys.stdout.write("exit: expects only 0 or 1\n")
-            return False
-        else:
-            return True
+            return "exit: expects only 0 or 1\n"
 
     def execute(self) -> None:
         """Closes the shell."""
@@ -166,15 +168,12 @@ class EchoCommand(Command):
 
 
 class TypeCommand(Command):
-    def isValid(self):
+    def isValid(self) -> str | None:
         """Checks that only one argument is provided."""
         if len(self.args) > 1:
-            sys.stdout.write("type: expects only one parameter\n")
-            return False
-        else:
-            return True
+            return "type: expects only one parameter\n"
 
-    def execute(self):
+    def execute(self) -> str:
         """Displays the type or location of the command passed in argument."""
         if self.args[0] in Command.getBuiltinCommandNames():
             return f"{self.args[0]} is a shell builtin\n"
@@ -187,27 +186,21 @@ class TypeCommand(Command):
 
 
 class PwdCommand(Command):
-    def isValid(self):
+    def isValid(self) -> str | None:
         """Checks that no argument is provided."""
         if len(self.args) > 0:
-            sys.stdout.write("pwd: expects no parameter\n")
-            return False
-        else:
-            return True
+            return "pwd: expects no parameter\n"
 
-    def execute(self):
+    def execute(self) -> str:
         """Displays the current working directory."""
         return f"{os.getcwd()}\n"
 
 
 class CdCommand(Command):
-    def isValid(self):
+    def isValid(self) -> str | None:
         """Checks that only one argument is provided."""
         if len(self.args) > 1:
-            sys.stdout.write("type: expects only one parameter\n")
-            return False
-        else:
-            return True
+            return "type: expects only one parameter\n"
 
     def execute(self) -> None | str:
         """Changes working directory to a target path (absolute, relative, or HOME)."""

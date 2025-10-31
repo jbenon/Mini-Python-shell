@@ -28,16 +28,29 @@ def main():
         command = commandType()
         command.__dict__.update(commandVanilla.__dict__)
 
-        # Execute
-        if command.isValid():
-            commandOutput = command.execute()
-            # Display or write
-            if commandOutput is not None:
+        # Check validity then display the eventual error message
+        errorMessage = command.isValid()
+        if errorMessage is not None:
+            if command.fileError == "":
+                sys.stdout.write(errorMessage)
+            else:
+                with open(command.fileError, "w") as file:
+                    file.write(errorMessage)
+        # Execute then display the output and eventual error
+        else:
+            [outputCommand, errorCommand] = command.execute()
+            if outputCommand is not None:
                 if command.fileOutput == "":
-                    sys.stdout.write(commandOutput)
+                    sys.stdout.write(outputCommand)
                 else:
                     with open(command.fileOutput, "w") as file:
-                        file.write(commandOutput)
+                        file.write(outputCommand)
+            if errorCommand is not None:
+                if command.fileError == "":
+                    sys.stdout.write(errorCommand)
+                else:
+                    with open(command.fileError, "w") as file:
+                        file.write(errorCommand)
 
 
 if __name__ == "__main__":
