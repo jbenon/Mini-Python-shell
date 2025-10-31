@@ -13,14 +13,13 @@ except ImportError:
     from commands import Command
     import commands
 
+# Cache for readline autocompleter
+_ALL_COMMANDS_CACHE: list[str] | None = None
 
-# Set up readline library
-def autocompleter(text: str, state: int) -> list[str]:
-    """Compares the text string with builtin command names and autocompletes them."""
-    lenText = len(text)
-    listMatchCommandNames = []
 
-    # Build the list of builtin and custom commands
+# Utils for readline autocompleter
+def _getAllCommandNames() -> list[str]:
+    """Gets the names of all builtin and custom commands."""
     builtinCommands = Command.getBuiltinCommandNames()
     customCommands = []
     for directoryPath in os.environ.get("PATH", "").split(os.pathsep):
@@ -40,12 +39,20 @@ def autocompleter(text: str, state: int) -> list[str]:
                 )
             ]
         )
-    listCommands = builtinCommands + customCommands
+    return builtinCommands + customCommands
+
+
+# Set up readline autocompleter
+def autocompleter(text: str, state: int) -> list[str]:
+    """Compares the text string with builtin command names and autocompletes them."""
+    global _ALL_COMMANDS_CACHE
+
+    # Build the list of builtin and custom commands
+    if _ALL_COMMANDS_CACHE is None:
+        _ALL_COMMANDS_CACHE = _getAllCommandNames()
 
     # Match with commands
-    for commandName in listCommands:
-        if commandName[:lenText] == text:
-            listMatchCommandNames.append(commandName + " ")
+    listMatchCommandNames = [command + " " for command in _ALL_COMMANDS_CACHE if command.startswith(text)]
 
     # Output desired state and handle missing completion
     if len(listMatchCommandNames) > state:
@@ -56,8 +63,10 @@ def autocompleter(text: str, state: int) -> list[str]:
         return None
 
 
+# Set up readline library
 readline.set_completer(autocompleter)
 readline.parse_and_bind("tab: complete")
+readline.parse_and_bind("set show-all-if-ambiguous off")
 
 
 def main():
