@@ -142,7 +142,7 @@ class CustomCommand(Command):
 
     def execute(self):
         """Runs the custom command."""
-        return subprocess.run([self.command] + self.args, stdout=subprocess.PIPE, text=True)
+        return subprocess.run([self.command] + self.args, stdout=subprocess.PIPE, text=True).stdout
 
 
 class ExitCommand(Command):
