@@ -51,15 +51,14 @@ def main():
 
 def writeCommandResult(result: str, file: str) -> None:
     """Writes the result (either output or error) of a command to a target file, or to the shell."""
-    if result is not None:
-        if file == "":
-            sys.stdout.write(result)
-        else:
-            directory = os.path.dirname(file)
-            if directory and not os.path.isdir(directory):
-                os.makedirs(directory, exist_ok=True)  # creates the directory
-            with open(file, "w") as file:
-                file.write(result)
+    if file == "" and result is not None:
+        sys.stdout.write(result)
+    elif file != "":
+        directory = os.path.dirname(file)
+        if directory and not os.path.isdir(directory):
+            os.makedirs(directory, exist_ok=True)  # creates the directory
+        with open(file, "w") as file:
+            file.write(result)
 
 
 if __name__ == "__main__":
