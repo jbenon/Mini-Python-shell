@@ -22,17 +22,31 @@ class Command:
 
         # Redirect command outputs
         self.fileOutput = ""
+        self.appendOutput = False
         self.fileError = ""
+        self.appendError = False
         for iArg in range(len(self.args) - 1):
             if self.args[iArg] == ">" or self.args[iArg] == "1>":  # stdout
                 self.fileOutput = self.args[iArg + 1]
                 self.args.pop(iArg)
                 self.args.pop(iArg)
         for iArg in range(len(self.args) - 1):
+            if self.args[iArg] == ">>" or self.args[iArg] == "1>>":  # stdout append
+                self.fileOutput = self.args[iArg + 1]
+                self.args.pop(iArg)
+                self.args.pop(iArg)
+                self.appendOutput = True
+        for iArg in range(len(self.args) - 1):
             if self.args[iArg] == "2>":  # stderr
                 self.fileError = self.args[iArg + 1]
                 self.args.pop(iArg)
                 self.args.pop(iArg)
+        for iArg in range(len(self.args) - 1):
+            if self.args[iArg] == "2>>":  # stderr append
+                self.fileError = self.args[iArg + 1]
+                self.args.pop(iArg)
+                self.args.pop(iArg)
+                self.appendError = True
 
     def parseInputIntoCommand(self, inputString: str = "") -> list[str]:
         """Parses the input string to extract the command and its arguments.

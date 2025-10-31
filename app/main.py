@@ -45,11 +45,11 @@ def main():
             else:
                 outputCommand = resultCommand
                 errorCommand = None
-            writeCommandResult(outputCommand, command.fileOutput)
-            writeCommandResult(errorCommand, command.fileError)
+            writeCommandResult(outputCommand, command.fileOutput, command.appendOutput)
+            writeCommandResult(errorCommand, command.fileError, command.appendError)
 
 
-def writeCommandResult(result: str, file: str) -> None:
+def writeCommandResult(result: str, file: str, append: bool = False) -> None:
     """Writes the result (either output or error) of a command to a target file, or to the shell."""
     if file == "" and result is not None:
         sys.stdout.write(result)
@@ -57,7 +57,11 @@ def writeCommandResult(result: str, file: str) -> None:
         directory = os.path.dirname(file)
         if directory and not os.path.isdir(directory):
             os.makedirs(directory, exist_ok=True)  # creates the directory
-        with open(file, "w") as file:
+        if append:
+            openOption = "a"
+        else:
+            openOption = "w"
+        with open(file, openOption) as file:
             if result is not None:
                 file.write(result)
 
