@@ -1,6 +1,13 @@
 import sys
-from .commands import Command
-from . import commands
+
+try:
+    # When run as a package
+    from .commands import Command
+    from . import commands
+except ImportError:
+    # When run locally as a script
+    from commands import Command
+    import commands
 
 
 def main():
@@ -22,7 +29,8 @@ def main():
         command.__dict__.update(commandVanilla.__dict__)
 
         # Execute
-        command.execute()
+        if command.isValid():
+            command.execute()
 
 
 if __name__ == "__main__":
