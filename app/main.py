@@ -45,7 +45,7 @@ class Command:
                         case "\\":
                             if not isBetweenDoubleQuotes and not isBetweenSingleQuotes:
                                 escapeNextChar = True
-                            elif isBetweenDoubleQuotes:
+                            elif isBetweenDoubleQuotes and not isBetweenSingleQuotes:
                                 escapeNextCharDoubleQuote = True
                         case "'":
                             currentParam, isBetweenSingleQuotes = self.updateParamQuote(
