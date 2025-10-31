@@ -1,6 +1,8 @@
 import sys
 import os
 
+import readline
+
 try:
     # When run as a package
     from .commands import Command
@@ -11,6 +13,22 @@ except ImportError:
     import commands
 
 
+# Set up readline library
+def autocompleter(text: str, state: int) -> list[str]:
+    """Compares the text string with builtin command names and autocompletes them."""
+    builtinCommands = Command.getBuiltinCommandNames()
+    lenText = len(text)
+    listMatchCommandNames = []
+    for commandName in builtinCommands:
+        if commandName[:lenText] == text:
+            listMatchCommandNames.append(commandName + " ")
+    return listMatchCommandNames[state]
+
+
+readline.set_completer(autocompleter)
+readline.parse_and_bind("tab: complete")
+
+
 def main():
     builtinCommands = Command.getBuiltinCommandNames()
     command = Command()
@@ -19,8 +37,10 @@ def main():
         # Print a prompt
         sys.stdout.write("$ ")
 
-        # Parse command and determine its type
+        # Get user input
         commandInput = input()
+
+        # Parse command and determine its type
         commandVanilla = Command(commandInput)
         if commandVanilla.command in builtinCommands:
             commandType = getattr(commands, commandVanilla.command.capitalize() + "Command")
