@@ -6,16 +6,33 @@ import subprocess
 
 class Command:
     def __init__(self, inputString: str = ""):
-        """Parses the input to extract the command and its arguments.
+        # By default, keep looking for other commands
+        self.parseNextCommand = True
+
+        listArgs = self.parseInputIntoCommand(inputString)
+        # Separate the command and arguments
+        if len(listArgs) > 0:
+            self.command = listArgs[0]
+        else:
+            self.command = None
+        if len(listArgs) > 1:
+            self.args = listArgs[1:]
+        else:
+            self.args = []
+
+        # Redirect command outputs
+        self.fileOutput = ""
+        for iArg in range(len(self.args) - 1):
+            if self.args[iArg] == ">" or self.args[iArg] == "1>":
+                self.fileOutput = self.args[iArg + 1]
+
+    def parseInputIntoCommand(self, inputString: str = "") -> list[str]:
+        """Parses the input string to extract the command and its arguments.
 
         Arguments are separated by white spaces. Anything within single quotes,
         including spaces and backlashes, is interpreted literally. Anything within
         double quotes is interpreted literally, except for backlashes which escape
         some characters. Outside quotes, backlashes escape any character."""
-
-        # By default, keep looking for other commands
-        self.parseNextCommand = True
-        # Parse and interpret the command and arguments
         listArgs = []
         currentArg = ""
         isBetweenSingleQuotes = False
@@ -68,15 +85,7 @@ class Command:
                         currentArg = currentArg + char
         if len(currentArg) > 0:
             listArgs.append(currentArg)
-        # Separate the command and arguments
-        if len(listArgs) > 0:
-            self.command = listArgs[0]
-        else:
-            self.command = None
-        if len(listArgs) > 1:
-            self.args = listArgs[1:]
-        else:
-            self.args = None
+        return listArgs
 
     def interpretArgQuote(
         self,
@@ -132,10 +141,8 @@ class CustomCommand(Command):
 
     def execute(self):
         """Runs the custom command."""
-        try:
-            subprocess.run([self.command] + self.args)
-        except Exception as e:
-            sys.stdout.write(f"{e}\n")
+        output = subprocess.run([self.command] + self.args, capture_output=True, text=True)
+        return output.stdout
 
 
 class ExitCommand(Command):
@@ -147,15 +154,15 @@ class ExitCommand(Command):
         else:
             return True
 
-    def execute(self):
+    def execute(self) -> None:
         """Closes the shell."""
         self.parseNextCommand = False
 
 
 class EchoCommand(Command):
-    def execute(self):
-        """Displays the parameters in the shell."""
-        sys.stdout.write(f"{' '.join(self.args)}\n")
+    def execute(self) -> str:
+        """Displays the arguments."""
+        return f"{' '.join(self.args)}\n"
 
 
 class TypeCommand(Command):
@@ -170,19 +177,19 @@ class TypeCommand(Command):
     def execute(self):
         """Displays the type or location of the command passed in argument."""
         if self.args[0] in Command.getBuiltinCommandNames():
-            sys.stdout.write(f"{self.args[0]} is a shell builtin\n")
+            return f"{self.args[0]} is a shell builtin\n"
         else:
             executablePath = shutil.which(self.args[0], mode=os.X_OK)
             if executablePath:
-                sys.stdout.write(f"{self.args[0]} is {executablePath}\n")
+                return f"{self.args[0]} is {executablePath}\n"
             else:
-                sys.stdout.write(f"{self.args[0]}: not found\n")
+                return f"{self.args[0]}: not found\n"
 
 
 class PwdCommand(Command):
     def isValid(self):
         """Checks that no argument is provided."""
-        if self.args is not None:
+        if len(self.args) > 0:
             sys.stdout.write("pwd: expects no parameter\n")
             return False
         else:
@@ -190,7 +197,7 @@ class PwdCommand(Command):
 
     def execute(self):
         """Displays the current working directory."""
-        sys.stdout.write(f"{os.getcwd()}\n")
+        return f"{os.getcwd()}\n"
 
 
 class CdCommand(Command):
@@ -202,11 +209,11 @@ class CdCommand(Command):
         else:
             return True
 
-    def execute(self):
+    def execute(self) -> None | str:
         """Changes working directory to a target path (absolute, relative, or HOME)."""
         if self.args[0] == "~":
             os.chdir(os.environ["HOME"])
         elif os.path.isdir(self.args[0]):
             os.chdir(self.args[0])
         else:
-            sys.stdout.write(f"cd: {self.args[0]}: No such file or directory\n")
+            return f"cd: {self.args[0]}: No such file or directory\n"
