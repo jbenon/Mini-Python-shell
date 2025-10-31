@@ -2,6 +2,7 @@ import sys
 import os
 
 import readline
+import shutil
 
 try:
     # When run as a package
@@ -17,17 +18,28 @@ except ImportError:
 def autocompleter(text: str, state: int) -> list[str]:
     """Compares the text string with builtin command names and autocompletes them."""
     lenText = len(text)
-    # Match with builtin commands
     listMatchCommandNames = []
+    # Match with builtin commands
     builtinCommands = Command.getBuiltinCommandNames()
     for commandName in builtinCommands:
         if commandName[:lenText] == text:
             listMatchCommandNames.append(commandName + " ")
+    # Match with custom commands
+    customCommands = []
+    for directoryPath in os.environ.get("PATH", "").split(os.pathsep):
+        customCommands.append(
+            os.path.splitext(filePath)[0]
+            for filePath in os.listdir(directoryPath)
+            if os.path.isfile(filePath) and os.access(filePath, os.X_OK)
+        )
+    for commandName in customCommands:
+        if commandName[:lenText] == text:
+            listMatchCommandNames.append(commandName + " ")
+    # Output desired state and handle missing completion
     if len(listMatchCommandNames) > 0:
         return listMatchCommandNames[state]
     else:
-        # No match found (incorrect command)
-        sys.stdout.write("\a")
+        sys.stdout.write("\a")  # bell command
         sys.stdout.flush()
         return None
 
