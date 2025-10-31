@@ -23,68 +23,67 @@ class Command:
 
     def __init__(self, inputList: list[str]):
         # Clean all parameters to account for single and double quotes
-        if len(inputList) > 1:
-            inputParamsString = " ".join(inputList)
-            self.params = []
-            isBetweenSingleQuotes = False
-            isBetweenDoubleQuotes = False
-            escapeNextChar = False
-            escapeNextCharDoubleQuote = False
-            currentParam = ""
-            for iChar, char in enumerate(inputParamsString):
-                if escapeNextChar:
+        self.params = None
+        inputParamsString = " ".join(inputList)
+        self.params = []
+        isBetweenSingleQuotes = False
+        isBetweenDoubleQuotes = False
+        escapeNextChar = False
+        escapeNextCharDoubleQuote = False
+        currentParam = ""
+        for iChar, char in enumerate(inputParamsString):
+            if escapeNextChar:
+                currentParam = currentParam + char
+                escapeNextChar = False
+            elif escapeNextCharDoubleQuote:
+                if char in ['"', "\\", "$", "`"]:
                     currentParam = currentParam + char
-                    escapeNextChar = False
-                elif escapeNextCharDoubleQuote:
-                    if char in ['"', "\\", "$", "`"]:
-                        currentParam = currentParam + char
-                    else:
-                        currentParam = currentParam + "\\" + char
-                    escapeNextCharDoubleQuote = False
                 else:
-                    match char:
-                        case "\\":
-                            if isBetweenSingleQuotes:
-                                currentParam = currentParam + char
-                            else:
-                                if isBetweenDoubleQuotes:
-                                    escapeNextCharDoubleQuote = True
-                                else:
-                                    escapeNextChar = True
-                        case "'":
-                            currentParam, isBetweenSingleQuotes = self.updateParamQuote(
-                                char,
-                                isBetweenSingleQuotes,
-                                isBetweenDoubleQuotes,
-                                currentParam,
-                                iChar,
-                                inputParamsString,
-                            )
-                        case '"':
-                            currentParam, isBetweenDoubleQuotes = self.updateParamQuote(
-                                char,
-                                isBetweenDoubleQuotes,
-                                isBetweenSingleQuotes,
-                                currentParam,
-                                iChar,
-                                inputParamsString,
-                            )
-                        case " ":
-                            if isBetweenSingleQuotes or isBetweenDoubleQuotes:
-                                currentParam = currentParam + char
-                            else:
-                                # Start new block delimited by a space
-                                if len(currentParam) > 0:
-                                    self.params.append(currentParam)
-                                    currentParam = ""
-                        case _:
+                    currentParam = currentParam + "\\" + char
+                escapeNextCharDoubleQuote = False
+            else:
+                match char:
+                    case "\\":
+                        if isBetweenSingleQuotes:
                             currentParam = currentParam + char
-            if len(currentParam) > 0:
-                self.params.append(currentParam)
-        else:
-            self.params = None
+                        else:
+                            if isBetweenDoubleQuotes:
+                                escapeNextCharDoubleQuote = True
+                            else:
+                                escapeNextChar = True
+                    case "'":
+                        currentParam, isBetweenSingleQuotes = self.updateParamQuote(
+                            char,
+                            isBetweenSingleQuotes,
+                            isBetweenDoubleQuotes,
+                            currentParam,
+                            iChar,
+                            inputParamsString,
+                        )
+                    case '"':
+                        currentParam, isBetweenDoubleQuotes = self.updateParamQuote(
+                            char,
+                            isBetweenDoubleQuotes,
+                            isBetweenSingleQuotes,
+                            currentParam,
+                            iChar,
+                            inputParamsString,
+                        )
+                    case " ":
+                        if isBetweenSingleQuotes or isBetweenDoubleQuotes:
+                            currentParam = currentParam + char
+                        else:
+                            # Start new block delimited by a space
+                            if len(currentParam) > 0:
+                                self.params.append(currentParam)
+                                currentParam = ""
+                    case _:
+                        currentParam = currentParam + char
+        if len(currentParam) > 0:
+            self.params.append(currentParam)
         # Separate the command and arguments
-        self.command = self.params[0]
+        if len(self.params) > 0:
+            self.command = self.params[0]
         if len(self.params) > 1:
             self.params = self.params[1:]
         else:
