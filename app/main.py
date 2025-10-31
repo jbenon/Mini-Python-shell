@@ -110,7 +110,7 @@ class Command:
                 isBetweenTargetQuoteType = False
                 currentParam = currentParam + quoteType
             # Start a block between quotes
-            if len(currentParam) > 0 and not ignoreQuote:
+            if isBetweenTargetQuoteType and len(currentParam) > 0 and not ignoreQuote:
                 self.params.append(currentParam)
                 currentParam = ""
         return currentParam, isBetweenTargetQuoteType
