@@ -1,6 +1,6 @@
 import sys
-from commands import Command
-import commands
+from .commands import Command
+from . import commands
 
 
 def main():
