@@ -58,7 +58,8 @@ def writeCommandResult(result: str, file: str) -> None:
         if directory and not os.path.isdir(directory):
             os.makedirs(directory, exist_ok=True)  # creates the directory
         with open(file, "w") as file:
-            file.write(result)
+            if result is not None:
+                file.write(result)
 
 
 if __name__ == "__main__":
