@@ -19,18 +19,26 @@ def autocompleter(text: str, state: int) -> list[str]:
     """Compares the text string with builtin command names and autocompletes them."""
     lenText = len(text)
     listMatchCommandNames = []
+
     # Match with builtin commands
     builtinCommands = Command.getBuiltinCommandNames()
     for commandName in builtinCommands:
         if commandName[:lenText] == text:
             listMatchCommandNames.append(commandName + " ")
+
     # Match with custom commands
     customCommands = []
     for directoryPath in os.environ.get("PATH", "").split(os.pathsep):
+        if not directoryPath:
+            continue
+        try:
+            files = os.listdir(directoryPath)
+        except (FileNotFoundError, PermissionError, NotADirectoryError):
+            continue
         customCommands.extend(
             [
                 os.path.splitext(file)[0]
-                for file in os.listdir(directoryPath)
+                for file in files
                 if (
                     os.access(os.path.join(directoryPath, file), os.X_OK)
                     and os.path.isfile(os.path.join(directoryPath, file))
@@ -40,8 +48,9 @@ def autocompleter(text: str, state: int) -> list[str]:
     for commandName in customCommands:
         if commandName[:lenText] == text:
             listMatchCommandNames.append(commandName + " ")
+
     # Output desired state and handle missing completion
-    if len(listMatchCommandNames) > 0:
+    if len(listMatchCommandNames) > 0 and len(listMatchCommandNames) <= state + 1:
         return listMatchCommandNames[state]
     else:
         sys.stdout.write("\a")  # bell command
