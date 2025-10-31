@@ -25,6 +25,7 @@ class Command:
         for iArg in range(len(self.args) - 1):
             if self.args[iArg] == ">" or self.args[iArg] == "1>":
                 self.fileOutput = self.args[iArg + 1]
+                self.args = self.args[:iArg]
 
     def parseInputIntoCommand(self, inputString: str = "") -> list[str]:
         """Parses the input string to extract the command and its arguments.

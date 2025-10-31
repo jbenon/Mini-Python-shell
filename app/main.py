@@ -34,7 +34,7 @@ def main():
 
         # Display or write
         if commandOutput is not None:
-            if command.fileOuput == "":
+            if command.fileOutput == "":
                 sys.stdout.write(commandOutput)
             else:
                 with open(command.fileOutput, "w") as file:
