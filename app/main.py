@@ -37,7 +37,7 @@ class Command:
                     currentParam = currentParam + char
                     escapeNextChar = False
                 elif escapeNextCharDoubleQuote:
-                    if char in ['"', "\\", "$", "`", "n"]:
+                    if char in ['"', "\\", "$", "`"]:
                         currentParam = currentParam + char
                     else:
                         currentParam = currentParam + "\\" + char
