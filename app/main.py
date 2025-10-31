@@ -27,10 +27,15 @@ def autocompleter(text: str, state: int) -> list[str]:
     # Match with custom commands
     customCommands = []
     for directoryPath in os.environ.get("PATH", "").split(os.pathsep):
-        customCommands.append(
-            os.path.splitext(filePath)[0]
-            for filePath in os.listdir(directoryPath)
-            if os.path.isfile(filePath) and os.access(filePath, os.X_OK)
+        customCommands.extend(
+            [
+                os.path.splitext(file)[0]
+                for file in os.listdir(directoryPath)
+                if (
+                    os.access(os.path.join(directoryPath, file), os.X_OK)
+                    and os.path.isfile(os.path.join(directoryPath, file))
+                )
+            ]
         )
     for commandName in customCommands:
         if commandName[:lenText] == text:
