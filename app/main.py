@@ -16,13 +16,20 @@ except ImportError:
 # Set up readline library
 def autocompleter(text: str, state: int) -> list[str]:
     """Compares the text string with builtin command names and autocompletes them."""
-    builtinCommands = Command.getBuiltinCommandNames()
     lenText = len(text)
+    # Match with builtin commands
     listMatchCommandNames = []
+    builtinCommands = Command.getBuiltinCommandNames()
     for commandName in builtinCommands:
         if commandName[:lenText] == text:
             listMatchCommandNames.append(commandName + " ")
-    return listMatchCommandNames[state]
+    if len(listMatchCommandNames) > 0:
+        return listMatchCommandNames[state]
+    else:
+        # No match found (incorrect command)
+        sys.stdout.write("\a")
+        sys.stdout.flush()
+        return None
 
 
 readline.set_completer(autocompleter)
