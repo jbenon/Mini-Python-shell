@@ -30,42 +30,51 @@ class Command:
             isBetweenSingleQuotes = False
             isBetweenDoubleQuotes = False
             escapeNextChar = False
+            escapeNextCharDoubleQuote = False
             currentParam = ""
             for iChar, char in enumerate(inputParamsString):
                 if escapeNextChar:
                     currentParam = currentParam + char
                     escapeNextChar = False
-                else:
-                    if char == "\\" and not isBetweenDoubleQuotes and not isBetweenSingleQuotes:
-                        escapeNextChar = True
-                    elif char == "'":
-                        currentParam, isBetweenSingleQuotes = self.updateParamQuote(
-                            char,
-                            isBetweenSingleQuotes,
-                            isBetweenDoubleQuotes,
-                            currentParam,
-                            iChar,
-                            inputParamsString,
-                        )
-                    elif char == '"':
-                        currentParam, isBetweenDoubleQuotes = self.updateParamQuote(
-                            char,
-                            isBetweenDoubleQuotes,
-                            isBetweenSingleQuotes,
-                            currentParam,
-                            iChar,
-                            inputParamsString,
-                        )
-                    elif char == " ":
-                        if isBetweenSingleQuotes or isBetweenDoubleQuotes:
-                            currentParam = currentParam + char
-                        else:
-                            # Start new block delimited by a space
-                            if len(currentParam) > 0:
-                                self.params.append(currentParam)
-                                currentParam = ""
-                    else:
+                elif escapeNextCharDoubleQuote:
+                    if char in ['"', "\\", "$", "'", "n"]:
                         currentParam = currentParam + char
+                    escapeNextCharDoubleQuote = False
+                else:
+                    match char:
+                        case "\\":
+                            if not isBetweenDoubleQuotes and not isBetweenSingleQuotes:
+                                escapeNextChar = True
+                            elif isBetweenDoubleQuotes:
+                                escapeNextCharDoubleQuote = True
+                        case "'":
+                            currentParam, isBetweenSingleQuotes = self.updateParamQuote(
+                                char,
+                                isBetweenSingleQuotes,
+                                isBetweenDoubleQuotes,
+                                currentParam,
+                                iChar,
+                                inputParamsString,
+                            )
+                        case '"':
+                            currentParam, isBetweenDoubleQuotes = self.updateParamQuote(
+                                char,
+                                isBetweenDoubleQuotes,
+                                isBetweenSingleQuotes,
+                                currentParam,
+                                iChar,
+                                inputParamsString,
+                            )
+                        case " ":
+                            if isBetweenSingleQuotes or isBetweenDoubleQuotes:
+                                currentParam = currentParam + char
+                            else:
+                                # Start new block delimited by a space
+                                if len(currentParam) > 0:
+                                    self.params.append(currentParam)
+                                    currentParam = ""
+                        case _:
+                            currentParam = currentParam + char
             if len(currentParam) > 0:
                 self.params.append(currentParam)
         else:
