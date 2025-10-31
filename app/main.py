@@ -40,7 +40,7 @@ class Command:
                     if char in ['"', "\\", "$", "`", "n"]:
                         currentParam = currentParam + char
                     else:
-                        currentParam = currentParam + "\\"
+                        currentParam = currentParam + "\\" + char
                     escapeNextCharDoubleQuote = False
                 else:
                     match char:
