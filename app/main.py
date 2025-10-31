@@ -11,7 +11,7 @@ def main():
 
         # Parse command
         commandInput = input()
-        command = Command(commandInput.split(" "))
+        command = Command(commandInput)
 
         # Execute
         command.execute()
@@ -21,66 +21,66 @@ class Command:
     builtinCommands = ["exit", "echo", "type", "pwd", "cd"]
     getCommandInput = True
 
-    def __init__(self, inputList: list[str]):
-        # Clean all parameters to account for single and double quotes
-        self.params = None
-        inputParamsString = " ".join(inputList)
-        self.params = []
+    def __init__(self, inputString: str):
+        """Parses the input to extract the command and its arguments.
+
+        Arguments are separated by white spaces. Anything within single quotes,
+        including spaces and backlashes, is interpreted literally. Anything within
+        double quotes is interpreted literally, except for backlashes which escape
+        some characters. Outside quotes, backlashes escape any character."""
+
+        listArgs = []
+        currentArg = ""
         isBetweenSingleQuotes = False
         isBetweenDoubleQuotes = False
         escapeNextChar = False
-        escapeNextCharDoubleQuote = False
-        currentParam = ""
-        for iChar, char in enumerate(inputParamsString):
+        for iChar, char in enumerate(inputString):
             if escapeNextChar:
-                currentParam = currentParam + char
-                escapeNextChar = False
-            elif escapeNextCharDoubleQuote:
-                if char in ['"', "\\", "$", "`"]:
-                    currentParam = currentParam + char
+                if isBetweenDoubleQuotes:
+                    if char in ['"', "\\", "$", "`"]:
+                        currentArg = currentArg + char
+                    else:
+                        currentArg = currentArg + "\\" + char
                 else:
-                    currentParam = currentParam + "\\" + char
-                escapeNextCharDoubleQuote = False
+                    currentArg = currentArg + char
+                escapeNextChar = False
             else:
                 match char:
                     case "\\":
                         if isBetweenSingleQuotes:
-                            currentParam = currentParam + char
+                            currentArg = currentArg + char
                         else:
-                            if isBetweenDoubleQuotes:
-                                escapeNextCharDoubleQuote = True
-                            else:
-                                escapeNextChar = True
+                            escapeNextChar = True
                     case "'":
-                        currentParam, isBetweenSingleQuotes = self.updateParamQuote(
+                        currentArg, isBetweenSingleQuotes = self.interpretArgQuote(
                             char,
                             isBetweenSingleQuotes,
                             isBetweenDoubleQuotes,
-                            currentParam,
+                            currentArg,
                             iChar,
-                            inputParamsString,
+                            inputString,
                         )
                     case '"':
-                        currentParam, isBetweenDoubleQuotes = self.updateParamQuote(
+                        currentArg, isBetweenDoubleQuotes = self.interpretArgQuote(
                             char,
                             isBetweenDoubleQuotes,
                             isBetweenSingleQuotes,
-                            currentParam,
+                            currentArg,
                             iChar,
-                            inputParamsString,
+                            inputString,
                         )
                     case " ":
                         if isBetweenSingleQuotes or isBetweenDoubleQuotes:
-                            currentParam = currentParam + char
+                            currentArg = currentArg + char
                         else:
                             # Start new block delimited by a space
-                            if len(currentParam) > 0:
-                                self.params.append(currentParam)
-                                currentParam = ""
+                            if len(currentArg) > 0:
+                                self.params.append(currentArg)
+                                currentArg = ""
                     case _:
-                        currentParam = currentParam + char
-        if len(currentParam) > 0:
-            self.params.append(currentParam)
+                        currentArg = currentArg + char
+        if len(currentArg) > 0:
+            self.params.append(currentArg)
         # Separate the command and arguments
         if len(self.params) > 0:
             self.command = self.params[0]
@@ -89,7 +89,7 @@ class Command:
         else:
             self.params = None
 
-    def updateParamQuote(
+    def interpretArgQuote(
         self,
         quoteType: str,
         isBetweenTargetQuoteType: bool,
@@ -98,31 +98,23 @@ class Command:
         iChar: int,
         inputParamsString: str,
     ) -> tuple[str, bool]:
-        """Util function called when a quote character is encountered when cleaning parameters during initialisation."""
-        # Treats the quote as any other character if we're already in a quote block
-        if isBetweenOtherQuoteType:
+        """Util function called when a quote is encountered in the arguments."""
+        # Ignore if this is a pair of empty quotes
+        if (iChar < (len(inputParamsString) - 1) and inputParamsString[iChar + 1] == quoteType) or (
+            iChar > 0 and inputParamsString[iChar - 1] == quoteType
+        ):
+            return currentParam, isBetweenTargetQuoteType
+        # Interpret literaly if this is embedded in another quote block or not a pair of quotes
+        if isBetweenOtherQuoteType or (
+            isBetweenTargetQuoteType
+            and (iChar == len(inputParamsString) - 1 or quoteType not in inputParamsString[iChar + 1 :])
+        ):
             currentParam = currentParam + quoteType
-        else:
-            ignoreQuote = False
-            # Ignore if this is a pair of empty quotes
-            if iChar < (len(inputParamsString) - 1) and inputParamsString[iChar + 1] == quoteType:
-                ignoreQuote = True
-            elif iChar > 0 and inputParamsString[iChar - 1] == quoteType:
-                ignoreQuote = True
-            # Change character storage settings
-            else:
-                isBetweenTargetQuoteType = not isBetweenTargetQuoteType
-            # Store quote literally if this is not a pair of quotes
-            if isBetweenTargetQuoteType and (
-                iChar == len(inputParamsString) - 1 or quoteType not in inputParamsString[iChar + 1 :]
-            ):
-                isBetweenTargetQuoteType = False
-                currentParam = currentParam + quoteType
-            # Start a block between quotes
-            if isBetweenTargetQuoteType and len(currentParam) > 0 and not ignoreQuote:
-                self.params.append(currentParam)
-                currentParam = ""
-        return currentParam, isBetweenTargetQuoteType
+            return currentParam, isBetweenTargetQuoteType
+        # Enter a new quote block
+        if isBetweenOtherQuoteType:
+            isBetweenTargetQuoteType = not isBetweenTargetQuoteType
+            return currentParam, isBetweenTargetQuoteType
 
     def isValidBuiltin(self, target: str = "") -> bool:
         """Checks whether a command is builtin."""
