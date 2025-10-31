@@ -20,13 +20,8 @@ def autocompleter(text: str, state: int) -> list[str]:
     lenText = len(text)
     listMatchCommandNames = []
 
-    # Match with builtin commands
+    # Build the list of builtin and custom commands
     builtinCommands = Command.getBuiltinCommandNames()
-    for commandName in builtinCommands:
-        if commandName[:lenText] == text:
-            listMatchCommandNames.append(commandName + " ")
-
-    # Match with custom commands
     customCommands = []
     for directoryPath in os.environ.get("PATH", "").split(os.pathsep):
         if not directoryPath:
@@ -45,12 +40,15 @@ def autocompleter(text: str, state: int) -> list[str]:
                 )
             ]
         )
-    for commandName in customCommands:
+    listCommands = builtinCommands + customCommands
+
+    # Match with commands
+    for commandName in listCommands:
         if commandName[:lenText] == text:
             listMatchCommandNames.append(commandName + " ")
 
     # Output desired state and handle missing completion
-    if len(listMatchCommandNames) > 0 and len(listMatchCommandNames) <= state + 1:
+    if len(listMatchCommandNames) > state:
         return listMatchCommandNames[state]
     else:
         sys.stdout.write("\a")  # bell command
