@@ -38,7 +38,11 @@ def main():
                     file.write(errorMessage)
         # Execute then display the output and eventual error
         else:
-            [outputCommand, errorCommand] = command.execute()
+            resultCommand = command.execute()
+            if resultCommand is tuple:
+                outputCommand, errorCommand = resultCommand
+            else:
+                outputCommand = resultCommand
             if outputCommand is not None:
                 if command.fileOutput == "":
                     sys.stdout.write(outputCommand)
