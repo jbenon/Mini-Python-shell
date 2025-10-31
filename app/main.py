@@ -106,15 +106,14 @@ class Command:
             return currentParam, isBetweenTargetQuoteType
         # Interpret literaly if this is embedded in another quote block or not a pair of quotes
         if isBetweenOtherQuoteType or (
-            isBetweenTargetQuoteType
+            not isBetweenTargetQuoteType
             and (iChar == len(inputParamsString) - 1 or quoteType not in inputParamsString[iChar + 1 :])
         ):
             currentParam = currentParam + quoteType
             return currentParam, isBetweenTargetQuoteType
         # Enter a new quote block
-        if isBetweenOtherQuoteType:
-            isBetweenTargetQuoteType = not isBetweenTargetQuoteType
-            return currentParam, isBetweenTargetQuoteType
+        isBetweenTargetQuoteType = not isBetweenTargetQuoteType
+        return currentParam, isBetweenTargetQuoteType
 
     def isValidBuiltin(self, target: str = "") -> bool:
         """Checks whether a command is builtin."""
