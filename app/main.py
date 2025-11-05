@@ -65,9 +65,8 @@ def autocompleter(text: str, state: int) -> list[str]:
 # Configure autocompletion
 readline.set_completer(autocompleter)
 readline.parse_and_bind("tab: complete")
-readline.parse_and_bind("set show-all-if-ambiguous off")
+# readline.parse_and_bind("set show-all-if-ambiguous off")
 readline.parse_and_bind("set show-all-if-unmodified on")
-readline.parse_and_bind("set bell-style audible")
 
 
 def main():
@@ -75,11 +74,8 @@ def main():
     command = Command()
 
     while command.parseNextCommand:
-        # Print a prompt
-        sys.stdout.write("$ ")
-
         # Get user input
-        commandInput = input()
+        commandInput = input("$ ")
 
         # Parse command and determine its type
         commandVanilla = Command(commandInput)
