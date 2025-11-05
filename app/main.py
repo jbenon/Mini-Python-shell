@@ -21,23 +21,23 @@ def _getAllCommandNames() -> list[str]:
     """Gets the names of all builtin and custom commands."""
     builtinCommands = Command.getBuiltinCommandNames()
     customCommands = []
-    # for directoryPath in os.environ.get("PATH", "").split(os.pathsep):
-    #     if not directoryPath:
-    #         continue
-    #     try:
-    #         files = os.listdir(directoryPath)
-    #     except (FileNotFoundError, PermissionError, NotADirectoryError):
-    #         continue
-    #     customCommands.extend(
-    #         [
-    #             os.path.splitext(file)[0]
-    #             for file in files
-    #             if (
-    #                 os.access(os.path.join(directoryPath, file), os.X_OK)
-    #                 and os.path.isfile(os.path.join(directoryPath, file))
-    #             )
-    #         ]
-    #     )
+    for directoryPath in os.environ.get("PATH", "").split(os.pathsep):
+        if not directoryPath:
+            continue
+        try:
+            files = os.listdir(directoryPath)
+        except (FileNotFoundError, PermissionError, NotADirectoryError):
+            continue
+        customCommands.extend(
+            [
+                os.path.splitext(file)[0]
+                for file in files
+                if (
+                    os.access(os.path.join(directoryPath, file), os.X_OK)
+                    and os.path.isfile(os.path.join(directoryPath, file))
+                )
+            ]
+        )
     return builtinCommands + customCommands
 
 
@@ -65,7 +65,6 @@ def autocompleter(text: str, state: int) -> list[str]:
 # Configure autocompletion
 readline.set_completer(autocompleter)
 readline.parse_and_bind("tab: complete")
-# readline.parse_and_bind("set show-all-if-ambiguous off")
 readline.parse_and_bind("set show-all-if-unmodified on")
 
 
