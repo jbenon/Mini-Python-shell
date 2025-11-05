@@ -66,6 +66,7 @@ def autocompleter(text: str, state: int) -> list[str]:
 readline.set_completer(autocompleter)
 readline.parse_and_bind("tab: complete")
 readline.parse_and_bind("set show-all-if-unmodified on")
+readline.parse_and_bind("set print-completions-horizontally on")
 
 
 def main():
