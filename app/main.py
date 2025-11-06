@@ -49,23 +49,13 @@ def main():
         command.updateHistory()
 
         # Check validity then display the eventual error message
-        errorMessage = command.isValid()
-        if errorMessage is not None:
-            if command.fileError == "":
-                sys.stdout.write(errorMessage)
-            else:
-                with open(command.fileError, "w") as file:
-                    file.write(errorMessage)
+        command.isValid()
+        command.writeOutput("error")
+
         # Execute then display the output and eventual error
-        else:
-            resultCommand = command.execute()
-            if isinstance(resultCommand, tuple):
-                outputCommand, errorCommand = resultCommand
-            else:
-                outputCommand = resultCommand
-                errorCommand = None
-            writeCommandResult(outputCommand, command.fileOutput, command.appendOutput)
-            writeCommandResult(errorCommand, command.fileError, command.appendError)
+        command.execute()
+        command.writeOutput("error")
+        command.writeOutput("output")
 
     # Write to history file on exit
     try:  # Load envirponment history file

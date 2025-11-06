@@ -1,4 +1,6 @@
+import sys
 import os
+
 import shutil
 import subprocess
 
@@ -148,6 +150,42 @@ class Command:
         else:
             self.__class__.history.append(f"{self.command}")
 
+    def writeOutput(self, outputType: str) -> None:
+        """Displays or writes in a file the output or error produced by the command."""
+        # Set the function to write either the output or the error
+        match outputType:
+            case "output":
+                if hasattr(self, "stdout"):
+                    result = self.stdout
+                else:
+                    result = None
+                file = self.fileOutput
+                append = self.appendOutput
+            case "error":
+                if hasattr(self, "stderr"):
+                    result = self.stderr
+                else:
+                    result = None
+                file = self.fileError
+                append = self.appendError
+            case _:
+                raise ("Unknown output type.")
+
+        if result is not None:
+            if file == "":
+                sys.stdout.write(result)
+            else:
+                directory = os.path.dirname(file)
+                if directory and not os.path.isdir(directory):
+                    os.makedirs(directory, exist_ok=True)  # creates the directory
+                if append:
+                    openOption = "a"
+                else:
+                    openOption = "w"
+                with open(file, openOption) as file:
+                    if result is not None:
+                        file.write(result)
+
     @classmethod
     def getBuiltinCommandNames(cls) -> list[str]:
         """Returns the name of all child builtin classes."""
@@ -162,96 +200,105 @@ class Command:
 
 
 class CustomCommand(Command):
-    def isValid(self) -> str | None:
+    def isValid(self) -> None:
         """Checks that the custom command exists and can be executed."""
         if not shutil.which(self.command, mode=os.X_OK):
-            return f"{self.command}: command not found\n"
+            self.stderr = f"{self.command}: command not found\n"
 
-    def execute(self):
+    def execute(self) -> None:
         """Runs the custom command."""
         output = subprocess.run([self.command] + self.args, capture_output=True, text=True)
-        return output.stdout, output.stderr
+        self.stdout = output.stdout
+        self.stderr = output.stderr
 
 
 class ExitCommand(Command):
     def isValid(self) -> str | None:
         """Check thet only one argument, equal to 0 or 1, is provided."""
         if len(self.args) > 1 or self.args[0] not in ["0", "1"]:
-            return "exit: expects only 0 or 1\n"
+            self.stderr = "exit: expects only 0 or 1\n"
 
     def execute(self) -> None:
         """Closes the shell."""
         self.parseNextCommand = False
+        self.stdout = None
+        self.stderr = None
 
 
 class EchoCommand(Command):
-    def execute(self) -> str:
+    def execute(self) -> None:
         """Displays the arguments."""
-        return f"{' '.join(self.args)}\n"
+        self.stdout = f"{' '.join(self.args)}\n"
+        self.stderr = None
 
 
 class TypeCommand(Command):
-    def isValid(self) -> str | None:
+    def isValid(self) -> None:
         """Checks that only one argument is provided."""
         if len(self.args) > 1:
-            return "type: expects only one parameter\n"
+            self.stderr = "type: expects only one parameter\n"
 
-    def execute(self) -> str:
+    def execute(self) -> None:
         """Displays the type or location of the command passed in argument."""
         if self.args[0] in Command.getBuiltinCommandNames():
-            return f"{self.args[0]} is a shell builtin\n"
+            self.stdout = f"{self.args[0]} is a shell builtin\n"
         else:
             executablePath = shutil.which(self.args[0], mode=os.X_OK)
             if executablePath:
-                return f"{self.args[0]} is {executablePath}\n"
+                self.stdout = f"{self.args[0]} is {executablePath}\n"
             else:
-                return f"{self.args[0]}: not found\n"
+                self.stdout = f"{self.args[0]}: not found\n"
+        self.stderr = None
 
 
 class PwdCommand(Command):
-    def isValid(self) -> str | None:
+    def isValid(self) -> None:
         """Checks that no argument is provided."""
         if len(self.args) > 0:
-            return "pwd: expects no parameter\n"
+            self.stderr = "pwd: expects no parameter\n"
 
-    def execute(self) -> str:
+    def execute(self) -> None:
         """Displays the current working directory."""
-        return f"{os.getcwd()}\n"
+        self.stdout = f"{os.getcwd()}\n"
+        self.stderr = None
 
 
 class CdCommand(Command):
-    def isValid(self) -> str | None:
+    def isValid(self) -> None:
         """Checks that only one argument is provided."""
         if len(self.args) > 1:
-            return "type: expects only one parameter\n"
+            self.stderr = "type: expects only one parameter\n"
 
-    def execute(self) -> None | str:
+    def execute(self) -> None:
         """Changes working directory to a target path (absolute, relative, or HOME)."""
         if self.args[0] == "~":
             os.chdir(os.environ["HOME"])
         elif os.path.isdir(self.args[0]):
             os.chdir(self.args[0])
         else:
-            return f"cd: {self.args[0]}: No such file or directory\n"
+            self.stderr = f"cd: {self.args[0]}: No such file or directory\n"
+        self.stdout = None
 
 
 class HistoryCommand(Command):
-    def isValid(self) -> str | None:
+    def isValid(self) -> None:
         """Checks possible history arguments, either empty, number or with -r."""
         if len(self.args) > 2:
-            return "history: expects two parameters maximum\n"
+            self.stderr = "history: expects two parameters maximum\n"
         if len(self.args) > 1:  # history -r path
             if self.args[0] not in ["-r", "-w", "-a"]:
-                return "history: first argument should be -r, -w or -a\n"
+                self.stderr = "history: first argument should be -r, -w or -a\n"
         elif len(self.args) > 0:
             try:
                 int(self.args[0])
             except ValueError:
-                return "history: expects an int as parameter\n"
+                self.stderr = "history: expects an int as parameter\n"
             if int(self.args[0]) > len(self.__class__.history):
-                return f"history: parameter must be inferior or equal to {len(self.__class__.history)}\n"
+                self.stderr = (
+                    f"history: parameter must be inferior or equal to {len(self.__class__.history)}\n"
+                )
 
-    def execute(self) -> str | None:
+    def execute(self) -> None:
         """Displays the list of previous commands or modifies history file's contents."""
         # Modifies history file's contents
         if len(self.args) > 1:
@@ -278,6 +325,8 @@ class HistoryCommand(Command):
                             fileHistory.write(f"{lineHistory}\n")
                     self.__class__.history.clear()
                     self.nStartFileHistoryLines = 0
+            self.stdout = None
+            self.stderr = None
 
         # Display history
         else:
@@ -289,4 +338,5 @@ class HistoryCommand(Command):
                 if iCommand < len(self.__class__.history) - self.args[0]:
                     continue
                 listHistory = listHistory + f"\t{iCommand + 1}  {command}\n"
-            return listHistory
+            self.stdout = listHistory
+            self.stderr = None
