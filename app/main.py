@@ -61,16 +61,19 @@ def autocompleter(text: str, state: int) -> list[str]:
             return listMatchCommandNames[0] + " "
         else:  # Ambiguous match
             if text != _LAST_BUF:  # 1st TAB
+                _LAST_BUF = text
                 sys.stdout.write("\a")
                 sys.stdout.flush()
-                _LAST_BUF = text
             else:  # 2nd TAB
+                _LAST_BUF = text
                 print()
                 print("  ".join(listMatchCommandNames))
                 sys.stdout.write(f"$ {text}")
                 sys.stdout.flush()
-                _LAST_BUF = text
-    return None
+    if len(listMatchCommandNames) > state:
+        return listMatchCommandNames[state] + " "
+    else:
+        return None
 
 
 def main():
