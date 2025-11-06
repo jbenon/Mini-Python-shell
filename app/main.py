@@ -20,6 +20,13 @@ def main():
     # Configure autocompletion
     autocompletion.setupCompletion()
 
+    # Read history file
+    try:
+        historyCommand = Command(f"history -r {os.environ['HISTFILE']}")
+        historyCommand.execute()
+    except Exception:
+        pass
+
     while command.parseNextCommand:
         # Get user input
         commandInput = input("$ ")
