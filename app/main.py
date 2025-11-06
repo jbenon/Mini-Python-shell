@@ -21,25 +21,24 @@ _LAST_BUF = None
 def _getAllCommandNames() -> list[str]:
     """Gets the names of all builtin and custom commands."""
     builtinCommands = Command.getBuiltinCommandNames()
-    builtinCommands = ["xyz_abcd", "xyz_edfg", "abcde"]
     customCommands = []
-    # for directoryPath in os.environ.get("PATH", "").split(os.pathsep):
-    #     if not directoryPath:
-    #         continue
-    #     try:
-    #         files = os.listdir(directoryPath)
-    #     except (FileNotFoundError, PermissionError, NotADirectoryError):
-    #         continue
-    #     customCommands.extend(
-    #         [
-    #             os.path.splitext(file)[0]
-    #             for file in files
-    #             if (
-    #                 os.access(os.path.join(directoryPath, file), os.X_OK)
-    #                 and os.path.isfile(os.path.join(directoryPath, file))
-    #             )
-    #         ]
-    #     )
+    for directoryPath in os.environ.get("PATH", "").split(os.pathsep):
+        if not directoryPath:
+            continue
+        try:
+            files = os.listdir(directoryPath)
+        except (FileNotFoundError, PermissionError, NotADirectoryError):
+            continue
+        customCommands.extend(
+            [
+                os.path.splitext(file)[0]
+                for file in files
+                if (
+                    os.access(os.path.join(directoryPath, file), os.X_OK)
+                    and os.path.isfile(os.path.join(directoryPath, file))
+                )
+            ]
+        )
     return builtinCommands + customCommands
 
 
