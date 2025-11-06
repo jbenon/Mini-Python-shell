@@ -38,13 +38,12 @@ def main():
         commandInput = input("$ ")
 
         # Parse command and determine its type
-        commandVanilla = Command(commandInput)
-        if commandVanilla.command in builtinCommands:
-            commandType = getattr(commands, commandVanilla.command.capitalize() + "Command")
+        listCommandArgs = commands.parseInputIntoCommand(commandInput)
+        if len(listCommandArgs) > 0 and listCommandArgs[0] in builtinCommands:
+            commandType = getattr(commands, listCommandArgs[0].capitalize() + "Command")
         else:
             commandType = commands.CustomCommand
-        command = commandType()
-        command.__dict__.update(commandVanilla.__dict__)
+        command = commandType(listCommandArgs)
 
         # Update command history
         command.updateHistory()

@@ -3,16 +3,103 @@ import shutil
 import subprocess
 
 
+def parseInputIntoCommand(inputString: str = "") -> list[str]:
+    """Parses the input string to extract the command and its arguments.
+
+    Arguments are separated by white spaces. Anything within single quotes,
+    including spaces and backlashes, is interpreted literally. Anything within
+    double quotes is interpreted literally, except for backlashes which escape
+    some characters. Outside quotes, backlashes escape any character."""
+    listArgs = []
+    currentArg = ""
+    isBetweenSingleQuotes = False
+    isBetweenDoubleQuotes = False
+    escapeNextChar = False
+    for iChar, char in enumerate(inputString):
+        if escapeNextChar:
+            if isBetweenDoubleQuotes:
+                if char in ['"', "\\", "$", "`"]:
+                    currentArg = currentArg + char
+                else:
+                    currentArg = currentArg + "\\" + char
+            else:
+                currentArg = currentArg + char
+            escapeNextChar = False
+        else:
+            match char:
+                case "\\":
+                    if isBetweenSingleQuotes:
+                        currentArg = currentArg + char
+                    else:
+                        escapeNextChar = True
+                case "'":
+                    currentArg, isBetweenSingleQuotes = interpretArgQuote(
+                        char,
+                        isBetweenSingleQuotes,
+                        isBetweenDoubleQuotes,
+                        currentArg,
+                        iChar,
+                        inputString,
+                    )
+                case '"':
+                    currentArg, isBetweenDoubleQuotes = interpretArgQuote(
+                        char,
+                        isBetweenDoubleQuotes,
+                        isBetweenSingleQuotes,
+                        currentArg,
+                        iChar,
+                        inputString,
+                    )
+                case " ":
+                    if isBetweenSingleQuotes or isBetweenDoubleQuotes:
+                        currentArg = currentArg + char
+                    else:
+                        # Start new block delimited by a space
+                        if len(currentArg) > 0:
+                            listArgs.append(currentArg)
+                            currentArg = ""
+                case _:
+                    currentArg = currentArg + char
+    if len(currentArg) > 0:
+        listArgs.append(currentArg)
+    return listArgs
+
+
+def interpretArgQuote(
+    quoteType: str,
+    isBetweenTargetQuoteType: bool,
+    isBetweenOtherQuoteType: bool,
+    currentParam: str,
+    iChar: int,
+    inputParamsString: str,
+) -> tuple[str, bool]:
+    """Util function called when a quote is encountered in the arguments."""
+    # Ignore if this is a pair of empty quotes
+    if (iChar < (len(inputParamsString) - 1) and inputParamsString[iChar + 1] == quoteType) or (
+        iChar > 0 and inputParamsString[iChar - 1] == quoteType
+    ):
+        return currentParam, isBetweenTargetQuoteType
+    # Interpret literaly if this is embedded in another quote block or not a pair of quotes
+    if isBetweenOtherQuoteType or (
+        not isBetweenTargetQuoteType
+        and (iChar == len(inputParamsString) - 1 or quoteType not in inputParamsString[iChar + 1 :])
+    ):
+        currentParam = currentParam + quoteType
+        return currentParam, isBetweenTargetQuoteType
+    # Enter a new quote block
+    isBetweenTargetQuoteType = not isBetweenTargetQuoteType
+    return currentParam, isBetweenTargetQuoteType
+
+
 class Command:
     # History is a class attribute
     history = []
 
-    def __init__(self, inputString: str = ""):
+    def __init__(self, listArgs: list[str] = []):
         # By default, keep looking for other commands
         self.parseNextCommand = True
 
         # Parse the command and its arguments
-        listArgs = self.parseInputIntoCommand(inputString)
         if len(listArgs) > 0:
             self.command = listArgs[0]
         else:
@@ -49,93 +136,6 @@ class Command:
                 self.args.pop(iArg)
                 self.args.pop(iArg)
                 self.appendError = True
-
-    def parseInputIntoCommand(self, inputString: str = "") -> list[str]:
-        """Parses the input string to extract the command and its arguments.
-
-        Arguments are separated by white spaces. Anything within single quotes,
-        including spaces and backlashes, is interpreted literally. Anything within
-        double quotes is interpreted literally, except for backlashes which escape
-        some characters. Outside quotes, backlashes escape any character."""
-        listArgs = []
-        currentArg = ""
-        isBetweenSingleQuotes = False
-        isBetweenDoubleQuotes = False
-        escapeNextChar = False
-        for iChar, char in enumerate(inputString):
-            if escapeNextChar:
-                if isBetweenDoubleQuotes:
-                    if char in ['"', "\\", "$", "`"]:
-                        currentArg = currentArg + char
-                    else:
-                        currentArg = currentArg + "\\" + char
-                else:
-                    currentArg = currentArg + char
-                escapeNextChar = False
-            else:
-                match char:
-                    case "\\":
-                        if isBetweenSingleQuotes:
-                            currentArg = currentArg + char
-                        else:
-                            escapeNextChar = True
-                    case "'":
-                        currentArg, isBetweenSingleQuotes = self.interpretArgQuote(
-                            char,
-                            isBetweenSingleQuotes,
-                            isBetweenDoubleQuotes,
-                            currentArg,
-                            iChar,
-                            inputString,
-                        )
-                    case '"':
-                        currentArg, isBetweenDoubleQuotes = self.interpretArgQuote(
-                            char,
-                            isBetweenDoubleQuotes,
-                            isBetweenSingleQuotes,
-                            currentArg,
-                            iChar,
-                            inputString,
-                        )
-                    case " ":
-                        if isBetweenSingleQuotes or isBetweenDoubleQuotes:
-                            currentArg = currentArg + char
-                        else:
-                            # Start new block delimited by a space
-                            if len(currentArg) > 0:
-                                listArgs.append(currentArg)
-                                currentArg = ""
-                    case _:
-                        currentArg = currentArg + char
-        if len(currentArg) > 0:
-            listArgs.append(currentArg)
-        return listArgs
-
-    def interpretArgQuote(
-        self,
-        quoteType: str,
-        isBetweenTargetQuoteType: bool,
-        isBetweenOtherQuoteType: bool,
-        currentParam: str,
-        iChar: int,
-        inputParamsString: str,
-    ) -> tuple[str, bool]:
-        """Util function called when a quote is encountered in the arguments."""
-        # Ignore if this is a pair of empty quotes
-        if (iChar < (len(inputParamsString) - 1) and inputParamsString[iChar + 1] == quoteType) or (
-            iChar > 0 and inputParamsString[iChar - 1] == quoteType
-        ):
-            return currentParam, isBetweenTargetQuoteType
-        # Interpret literaly if this is embedded in another quote block or not a pair of quotes
-        if isBetweenOtherQuoteType or (
-            not isBetweenTargetQuoteType
-            and (iChar == len(inputParamsString) - 1 or quoteType not in inputParamsString[iChar + 1 :])
-        ):
-            currentParam = currentParam + quoteType
-            return currentParam, isBetweenTargetQuoteType
-        # Enter a new quote block
-        isBetweenTargetQuoteType = not isBetweenTargetQuoteType
-        return currentParam, isBetweenTargetQuoteType
 
     def isValid(self) -> None:
         """By default, all commands are valid."""
