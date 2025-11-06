@@ -68,6 +68,8 @@ def autocompleter(text: str, state: int) -> list[str]:
                 print("  ".join(listMatchCommandNames))
                 sys.stdout.write(f"$ {text}")
                 sys.stdout.flush()
+
+    # Return desired match
     if len(listMatchCommandNames) > state:
         return listMatchCommandNames[state] + " "
     else:
@@ -75,5 +77,6 @@ def autocompleter(text: str, state: int) -> list[str]:
 
 
 def setupCompletion() -> None:
+    """Configurates the readline module with the custom completer function."""
     readline.parse_and_bind("tab: complete")
     readline.set_completer(autocompleter)
