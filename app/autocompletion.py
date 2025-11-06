@@ -65,7 +65,7 @@ def autocompleter(text: str, state: int) -> list[str]:
             else:  # 2nd TAB
                 _LAST_BUF = text
                 print()
-                print("  ".join(listMatchCommandNames))
+                print("  ".join(sorted(listMatchCommandNames)))
                 sys.stdout.write(f"$ {text}")
                 sys.stdout.flush()
 
