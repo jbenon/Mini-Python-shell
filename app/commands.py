@@ -238,8 +238,8 @@ class HistoryCommand(Command):
         if len(self.args) > 2:
             return "history: expects two parameters maximum\n"
         if len(self.args) > 1:  # history -r path
-            if self.args[0] != "-r":
-                return "history: should be history <n> or history -r <path>\n"
+            if self.args[0] not in ["-r", "-w"]:
+                return "history: first argument should be -r or -w\n"
         elif len(self.args) > 0:
             try:
                 int(self.args[0])
@@ -249,12 +249,18 @@ class HistoryCommand(Command):
                 return f"history: parameter must be inferior or equal to {len(self.__class__.history)}\n"
 
     def execute(self) -> str | None:
-        """Displays the list of previous commands or appends history file's contents."""
-        # Append the content of the history file to current history
-        if len(self.args) > 1 and self.args[0] == "-r":
-            with open(self.args[1], "r") as fileHistory:
-                for lineHistory in fileHistory:
-                    self.__class__.history.append(lineHistory.rstrip())
+        """Displays the list of previous commands or modifies history file's contents."""
+        # Modifies history file's contents
+        if len(self.args) > 1:
+            match self.args[0]:
+                case "-r":  # Append the content of the history file to current history
+                    with open(self.args[1], "r") as fileHistory:
+                        for lineHistory in fileHistory:
+                            self.__class__.history.append(lineHistory.rstrip())
+                case "-w":  # Write the current history to a history file
+                    with open(self.args[1], "w") as fileHistory:
+                        for lineHistory in self.__class__.history:
+                            fileHistory.write(f"{lineHistory}\n")
 
         # Display history
         else:
