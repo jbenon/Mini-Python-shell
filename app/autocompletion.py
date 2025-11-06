@@ -80,4 +80,9 @@ def setupCompletion() -> None:
     """Configurates the readline module with the custom completer function."""
     readline.parse_and_bind("tab: complete")
     readline.set_completer(autocompleter)
-    readline.read_history_file()
+
+
+def setupHistory() -> None:
+    """Configurates the readline module to have a simple interactive history of commands."""
+    HISTFILE = os.path.expanduser("~/.myshell_history")
+    readline.read_history_file(HISTFILE)
