@@ -68,15 +68,15 @@ def main():
             writeCommandResult(outputCommand, command.fileOutput, command.appendOutput)
             writeCommandResult(errorCommand, command.fileError, command.appendError)
 
-    # Write history file on exit
+    # Append to history file on exit
     try:  # Load envirponment history file
         histFilePath = os.environ["HISTFILE"]
-        historyCommand = commands.HistoryCommand(f"history -w {histFilePath}")
+        historyCommand = commands.HistoryCommand(f"history -a {histFilePath}")
         historyCommand.execute()
     except Exception:
         try:  # Load local history file
             histFilePath = os.path.join(os.getcwd(), "app", "history.txt")
-            historyCommand = commands.HistoryCommand(f'history -w "{histFilePath}"')
+            historyCommand = commands.HistoryCommand(f'history -a "{histFilePath}"')
             historyCommand.execute()
         except Exception:
             pass
