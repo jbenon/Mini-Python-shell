@@ -143,7 +143,10 @@ class Command:
 
     def updateHistory(self) -> None:
         """Adds the current command to the list of previous commands."""
-        self.__class__.history.append(f"{self.command} {' '.join(self.args)}")
+        if len(self.args) > 0:
+            self.__class__.history.append(f"{self.command} {' '.join(self.args)}")
+        else:
+            self.__class__.history.append(f"{self.command}")
 
     @classmethod
     def getBuiltinCommandNames(cls) -> list[str]:
