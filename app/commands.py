@@ -235,12 +235,24 @@ class CdCommand(Command):
 class HistoryCommand(Command):
     def isValid(self) -> str | None:
         """Checks that no argument is provided."""
+        if len(self.args) > 1:
+            return "history: expects only one parameter\n"
         if len(self.args) > 0:
-            return "pwd: expects no parameter\n"
+            try:
+                int(self.args[0])
+            except ValueError:
+                return "history: expects an int as parameter\n"
+        if len(self.args) > 0 and int(self.args[0]) > len(self.__class__.history):
+            return f"history: parameter must be inferior or equal to {len(self.__class__.history)}\n"
 
     def execute(self) -> str:
         """Displays the list of previous commands."""
         listHistory = ""
+        if self.args == []:
+            self.args = [len(self.__class__.history)]
+        self.args[0] = int(self.args[0])
         for iCommand, command in enumerate(self.__class__.history):
+            if iCommand < len(self.__class__.history) - self.args[0]:
+                continue
             listHistory = listHistory + f"\t{iCommand + 1}  {command}\n"
         return listHistory
