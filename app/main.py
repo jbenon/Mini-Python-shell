@@ -64,14 +64,12 @@ def autocompleter(text: str, state: int) -> list[str]:
                 sys.stdout.write("\a")
                 sys.stdout.flush()
                 _LAST_BUF = text
-                return text
             else:  # 2nd TAB
                 print()
                 print("  ".join(listMatchCommandNames))
                 sys.stdout.write(f"$ {text}")
                 sys.stdout.flush()
                 _LAST_BUF = text
-                return text
     return None
 
 
