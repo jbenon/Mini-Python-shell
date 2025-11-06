@@ -21,11 +21,17 @@ def main():
     autocompletion.setupCompletion()
 
     # Read history file
-    try:
-        historyCommand = Command(f"history -r {os.environ['HISTFILE']}")
+    try:  # Load envirponment history file
+        histFilePath = os.environ["HISTFILE"]
+        historyCommand = commands.HistoryCommand(f"history -r {histFilePath}")
         historyCommand.execute()
     except Exception:
-        pass
+        try:  # Load local history file
+            histFilePath = os.path.join(os.getcwd(), "app", "history.txt")
+            historyCommand = commands.HistoryCommand(f'history -r "{histFilePath}"')
+            historyCommand.execute()
+        except Exception:
+            pass
 
     while command.parseNextCommand:
         # Get user input
