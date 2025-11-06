@@ -257,14 +257,27 @@ class HistoryCommand(Command):
         if len(self.args) > 1:
             match self.args[0]:
                 case "-r":  # Append the content of the history file to current history
+                    self.nStartFileHistoryLines = 0
                     with open(self.args[1], "r") as fileHistory:
                         for lineHistory in fileHistory:
                             self.__class__.history.append(lineHistory.rstrip())
-                case "-w" | "-a":  # Write the current history to a history file and delete current history
-                    with open(self.args[1], self.args[0][1]) as fileHistory:
+                            self.nStartFileHistoryLines += 1
+                case "-w":  # Write the current history to a history file and delete current history
+                    with open(self.args[1], "w") as fileHistory:
                         for lineHistory in self.__class__.history:
                             fileHistory.write(f"{lineHistory}\n")
                     self.__class__.history.clear()
+                case "-a":  # Write new lines only to a history file and delete current history
+                    countLines = 0
+                    if not hasattr(self, "nStartFileHistoryLines"):
+                        self.nStartFileHistoryLines = 0
+                    with open(self.args[1], "a") as fileHistory:
+                        for lineHistory in self.__class__.history:
+                            if countLines < self.nStartFileHistoryLines:
+                                continue
+                            fileHistory.write(f"{lineHistory}\n")
+                    self.__class__.history.clear()
+                    self.nStartFileHistoryLines = 0
 
         # Display history
         else:
