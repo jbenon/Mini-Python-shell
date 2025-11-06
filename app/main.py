@@ -43,6 +43,7 @@ def main():
                     file.write(errorMessage)
         # Execute then display the output and eventual error
         else:
+            command.updateHistory()
             resultCommand = command.execute()
             if isinstance(resultCommand, tuple):
                 outputCommand, errorCommand = resultCommand

@@ -4,6 +4,9 @@ import subprocess
 
 
 class Command:
+    # History is a class attribute
+    history = []
+
     def __init__(self, inputString: str = ""):
         # By default, keep looking for other commands
         self.parseNextCommand = True
@@ -138,6 +141,10 @@ class Command:
         """By default, all commands are valid."""
         return
 
+    def updateHistory(self) -> None:
+        """Adds the current command to the list of previous commands."""
+        self.__class__.history.append(self.command)
+
     @classmethod
     def getBuiltinCommandNames(cls) -> list[str]:
         """Returns the name of all child builtin classes."""
@@ -223,3 +230,17 @@ class CdCommand(Command):
             os.chdir(self.args[0])
         else:
             return f"cd: {self.args[0]}: No such file or directory\n"
+
+
+class HistoryCommand(Command):
+    def isValid(self) -> str | None:
+        """Checks that no argument is provided."""
+        if len(self.args) > 0:
+            return "pwd: expects no parameter\n"
+
+    def execute(self) -> str:
+        """Displays the list of previous commands."""
+        listHistory = ""
+        for iCommand, command in enumerate(self.__class__.history):
+            listHistory = listHistory + f"\t{iCommand + 1}  {command}\n"
+        return listHistory
