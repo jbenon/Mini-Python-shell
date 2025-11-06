@@ -33,6 +33,9 @@ def main():
         command = commandType()
         command.__dict__.update(commandVanilla.__dict__)
 
+        # Update command history
+        command.updateHistory()
+
         # Check validity then display the eventual error message
         errorMessage = command.isValid()
         if errorMessage is not None:
@@ -43,7 +46,6 @@ def main():
                     file.write(errorMessage)
         # Execute then display the output and eventual error
         else:
-            command.updateHistory()
             resultCommand = command.execute()
             if isinstance(resultCommand, tuple):
                 outputCommand, errorCommand = resultCommand
