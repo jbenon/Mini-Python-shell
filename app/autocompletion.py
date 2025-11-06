@@ -84,5 +84,5 @@ def setupCompletion() -> None:
 
 def setupHistory() -> None:
     """Configurates the readline module to have a simple interactive history of commands."""
-    HISTFILE = os.path.expanduser("~/.myshell_history")
+    HISTFILE = os.path.expanduser("~/.history")
     readline.read_history_file(HISTFILE)
