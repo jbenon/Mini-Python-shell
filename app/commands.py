@@ -238,8 +238,8 @@ class HistoryCommand(Command):
         if len(self.args) > 2:
             return "history: expects two parameters maximum\n"
         if len(self.args) > 1:  # history -r path
-            if self.args[0] not in ["-r", "-w"]:
-                return "history: first argument should be -r or -w\n"
+            if self.args[0] not in ["-r", "-w", "-a"]:
+                return "history: first argument should be -r, -w or -a\n"
         elif len(self.args) > 0:
             try:
                 int(self.args[0])
@@ -259,6 +259,10 @@ class HistoryCommand(Command):
                             self.__class__.history.append(lineHistory.rstrip())
                 case "-w":  # Write the current history to a history file
                     with open(self.args[1], "w") as fileHistory:
+                        for lineHistory in self.__class__.history:
+                            fileHistory.write(f"{lineHistory}\n")
+                case "-a":  # Append the current history to a history file
+                    with open(self.args[1], "a") as fileHistory:
                         for lineHistory in self.__class__.history:
                             fileHistory.write(f"{lineHistory}\n")
 
