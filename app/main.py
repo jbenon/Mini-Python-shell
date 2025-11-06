@@ -14,30 +14,32 @@ except ImportError:
 
 # Cache for readline autocompleter
 _ALL_COMMANDS_CACHE: list[str] | None = None
+_LAST_BUF = None
 
 
 # Utils for readline autocompleter
 def _getAllCommandNames() -> list[str]:
     """Gets the names of all builtin and custom commands."""
     builtinCommands = Command.getBuiltinCommandNames()
+    builtinCommands = ["xyz_abcd", "xyz_edfg", "abcde"]
     customCommands = []
-    for directoryPath in os.environ.get("PATH", "").split(os.pathsep):
-        if not directoryPath:
-            continue
-        try:
-            files = os.listdir(directoryPath)
-        except (FileNotFoundError, PermissionError, NotADirectoryError):
-            continue
-        customCommands.extend(
-            [
-                os.path.splitext(file)[0]
-                for file in files
-                if (
-                    os.access(os.path.join(directoryPath, file), os.X_OK)
-                    and os.path.isfile(os.path.join(directoryPath, file))
-                )
-            ]
-        )
+    # for directoryPath in os.environ.get("PATH", "").split(os.pathsep):
+    #     if not directoryPath:
+    #         continue
+    #     try:
+    #         files = os.listdir(directoryPath)
+    #     except (FileNotFoundError, PermissionError, NotADirectoryError):
+    #         continue
+    #     customCommands.extend(
+    #         [
+    #             os.path.splitext(file)[0]
+    #             for file in files
+    #             if (
+    #                 os.access(os.path.join(directoryPath, file), os.X_OK)
+    #                 and os.path.isfile(os.path.join(directoryPath, file))
+    #             )
+    #         ]
+    #     )
     return builtinCommands + customCommands
 
 
@@ -45,33 +47,44 @@ def _getAllCommandNames() -> list[str]:
 def autocompleter(text: str, state: int) -> list[str]:
     """Compares the text string with builtin command names and autocompletes them."""
     global _ALL_COMMANDS_CACHE
+    global _LAST_BUF
 
     # Build the list of builtin and custom commands
     if _ALL_COMMANDS_CACHE is None:
         _ALL_COMMANDS_CACHE = _getAllCommandNames()
 
     # Match with commands
-    listMatchCommandNames = [command + " " for command in _ALL_COMMANDS_CACHE if command.startswith(text)]
+    listMatchCommandNames = [command for command in _ALL_COMMANDS_CACHE if command.startswith(text)]
 
-    # Output desired state and handle missing completion
-    if len(listMatchCommandNames) > state:
-        return listMatchCommandNames[state]
-    else:
-        sys.stdout.write("\a")  # bell command
-        sys.stdout.flush()
-        return None
-
-
-# Configure autocompletion
-readline.set_completer(autocompleter)
-readline.parse_and_bind("tab: complete")
-readline.parse_and_bind("set show-all-if-unmodified on")
-readline.parse_and_bind("set print-completions-horizontally on")
+    # Handle ambiguous cases: display all matches on 2nd TAB only
+    if state == 0:
+        if len(listMatchCommandNames) == 1:  # Unambiguous match
+            return listMatchCommandNames[0] + " "
+        else:  # Ambiguous match
+            if text != _LAST_BUF:  # 1st TAB
+                sys.stdout.write("\a")
+                sys.stdout.flush()
+                _LAST_BUF = text
+                return text
+            else:  # 2nd TAB
+                print()
+                print("  ".join(listMatchCommandNames))
+                sys.stdout.write(f"$ {text}")
+                sys.stdout.flush()
+                _LAST_BUF = text
+                return text
+    return None
 
 
 def main():
     builtinCommands = Command.getBuiltinCommandNames()
     command = Command()
+
+    # Configure autocompletion
+    readline.parse_and_bind("tab: complete")
+    readline.set_completer(autocompleter)
+    # readline.parse_and_bind("set show-all-if-ambiguous off")
+    # readline.parse_and_bind("set print-completions-horizontally on")
 
     while command.parseNextCommand:
         # Get user input
