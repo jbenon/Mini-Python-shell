@@ -1,0 +1,5 @@
+echo haha
+history -w C:\Users\jbeno\OneDrive\Documents\CodeLearning\CodeCrafters\codecrafters-shell-python\app\history.txt
+echo edede
+echo eded
+history -a C:\Users\jbeno\OneDrive\Documents\CodeLearning\CodeCrafters\codecrafters-shell-python\app\history.txt

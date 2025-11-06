@@ -261,7 +261,7 @@ class HistoryCommand(Command):
                     with open(self.args[1], self.args[0][1]) as fileHistory:
                         for lineHistory in self.__class__.history:
                             fileHistory.write(f"{lineHistory}\n")
-                    self.__class__.history = []
+                    self.__class__.history.clear()
 
         # Display history
         else:
