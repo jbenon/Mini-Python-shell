@@ -1,6 +1,7 @@
 # Mini shell
 
-This project is a minimal shell implemented in Python 3.12, developed by following the ["Build Your Own Shell" Challenge](https://app.codecrafters.io/courses/shell/overview). The challenge provides the base architecture and a sequence of validation steps through an automated testing system.
+This project is a minimal shell implemented in Python 3.12, developed by following the ["Build Your Own Shell" Challenge](https://app.codecrafters.io/courses/shell/overview).
+CodeCrafters supplied the project skeleton (folder layout and test-execution system), but the full shell logic and all Python implementation details were designed and coded independently.
 
 To run on **Windows**:
 
