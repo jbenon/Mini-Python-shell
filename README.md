@@ -75,8 +75,8 @@ Hi      I'm "Juliette"
 
 Command output and error can be redirected to files using `>` (or `1>`) and `2>`, respectively. Examples:
 ```bash
-$ echo Hi > usr/local/bin/hi.txt
-$ echho Hi 2> usr/local/bin/error.txt
+$ echo Hi > hi.txt
+$ echho Hi 2> error.txt
 ```
 `>` (and `1>`, `2>`) overwrites the target file if it exists, whereas `>>` (and `1>>`, `2>>`) appends to the target file.
 
