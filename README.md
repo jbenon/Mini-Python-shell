@@ -1,34 +1,90 @@
-[![progress-banner](https://backend.codecrafters.io/progress/shell/657bf7c6-776b-4c34-86bd-22b3c4ad53b5)](https://app.codecrafters.io/users/codecrafters-bot?r=2qF)
+# Mini shell
 
-This is a starting point for Python solutions to the
-["Build Your Own Shell" Challenge](https://app.codecrafters.io/courses/shell/overview).
+This project is a minimal shell implemented in Python 3.12, developed by following the ["Build Your Own Shell" Challenge](https://app.codecrafters.io/courses/shell/overview). The challenge provides the base architecture and a sequence of validation steps through an automated testing system.
 
-In this challenge, you'll build your own POSIX compliant shell that's capable of
-interpreting shell commands, running external programs and builtin commands like
-cd, pwd, echo and more. Along the way, you'll learn about shell command parsing,
-REPLs, builtin commands, and more.
+To run on **Windows**:
 
-**Note**: If you're viewing this repo on GitHub, head over to
-[codecrafters.io](https://codecrafters.io) to try the challenge.
-
-# Passing the first stage
-
-The entry point for your `shell` implementation is in `app/main.py`. Study and
-uncomment the relevant code, and push your changes to pass the first stage:
-
-```sh
-git commit -am "pass 1st stage" # any msg
-git push origin master
+```bash
+py app/main.py
 ```
 
-Time to move on to the next stage!
+## Usage
 
-# Stage 2 & beyond
+### Builtin commands
 
-Note: This section is for stages 2 and beyond.
+The shell implements several builtin commands:
+- `exit 0`: exists the shell (terminates with status 0).
+- `echo`: displays the given arguments.
+```bash
+$ echo Hello world
+Hello world
+```
+- `type`: identifies whether a command is builtin or external and shows its location if applicable.
+```bash
+$ type echo
+echo is a shell builtin
+```
+```bash
+$ type ls
+ls is C:\Program Files\Git\usr\bin\ls.EXE
+```
+- `pwd`: displays the current working directory.
+- `cd`: changes the current working directory.
+- `history`: lists previously executed commands. Example:
+```bash
+$ echo Hello World
+Hello World
+$ pwd
+/usr/local/bin
+$ cd ../
+$ pwd
+/usr/local/
+$ history
+   1  echo Hello World
+   2  pwd
+   3  cd ../
+   4  pwd
+   5  history
+```
+The shell reads from and writes to `app/history.txt` so that command history persists between sessions.
 
-1. Ensure you have `python (3.13)` installed locally
-1. Run `./your_program.sh` to run your program, which is implemented in
-   `app/main.py`.
-1. Commit your changes and run `git push origin master` to submit your solution
-   to CodeCrafters. Test output will be streamed to your terminal.
+### Non-builtins
+
+Commands that are **not builtin** are resolved using the system’s `PATH` and executed if an appropriate executable is found. Example:
+
+```bash
+$ ls
+Pipfile
+Pipfile.lock
+README.md
+app
+codecrafters.yml
+your_program.sh
+```
+
+### Quoting and escaping
+
+This shell supports single quotes, double quotes, and escaped characters. Example:
+
+```bash
+$ ec''ho "Hi   " \ \ I'm "\"Juliette\""
+Hi      I'm "Juliette"
+```
+
+### Redirection
+
+Command output and error can be redirected to files using `>` (or `1>`) and `2>`, respectively. Examples:
+```bash
+$ echo Hi > usr/local/bin/hi.txt
+$ echho Hi 2> usr/local/bin/error.txt
+```
+`>` (and `1>`, `2>`) overwrites the target file if it exists, whereas `>>` (and `1>>`, `2>>`) appends to the target file.
+
+### Interactive inputs
+
+- Press `TAB` to autocomplete the current command.
+- Use the `UP` and `DOWN` arrow keys to navigate through the command history.
+
+### Pipelines
+
+Pipelines (`|`) are currently **beyond the project’s scope**.
