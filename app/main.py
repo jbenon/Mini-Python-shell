@@ -52,10 +52,11 @@ def main():
         command.isValid()
         command.writeOutput("error")
 
-        # Execute then display the output and eventual error
-        command.execute()
-        command.writeOutput("error")
-        command.writeOutput("output")
+        if not hasattr(command, "stderr"):
+            # Execute then display the output and eventual error
+            command.execute()
+            command.writeOutput("error")
+            command.writeOutput("output")
 
     # Write to history file on exit
     try:  # Load envirponment history file
